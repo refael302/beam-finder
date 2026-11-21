@@ -66,7 +66,11 @@ fun AboutScreen(
                     stringResource(R.string.about_update_available, st.info.versionName)
                 UpdateUiState.Installing -> stringResource(R.string.about_updating)
                 is UpdateUiState.NeedsPermission -> stringResource(R.string.about_update_needs_permission)
-                is UpdateUiState.Error -> stringResource(R.string.about_update_error, st.message)
+                is UpdateUiState.Error -> if (st.message == "no releases yet") {
+                    stringResource(R.string.about_no_releases)
+                } else {
+                    stringResource(R.string.about_update_error, st.message)
+                }
             }
             if (statusText != null) {
                 Text(statusText, style = MaterialTheme.typography.bodyMedium)

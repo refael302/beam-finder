@@ -80,6 +80,7 @@
     <string name="about_update_needs_permission">Allow Beam Finder to install unknown apps to update.</string>
     <string name="about_update_open_settings">Open settings</string>
     <string name="about_update_error">Update failed: %1$s</string>
+    <string name="about_no_releases">No GitHub release published yet.</string>
     <string name="about_update_not_supported">Updates are managed by Google Play.</string>
     <string name="about_license">Open source under the MIT license.</string>
 </resources>

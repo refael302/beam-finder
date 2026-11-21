@@ -38,7 +38,10 @@ class GitHubReleaseChecker(
             .build()
 
         client.newCall(request).execute().use { response ->
-            if (response.code == 404) return UpdateResult.UpToDate // no releases yet
+            // No releases published yet — not the same as "already on latest".
+            if (response.code == 404) {
+                return UpdateResult.Error("no releases yet")
+            }
             if (!response.isSuccessful) return UpdateResult.Error("HTTP ${response.code}")
             val body = response.body?.string() ?: return UpdateResult.Error("empty response")
 

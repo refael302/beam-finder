@@ -78,6 +78,7 @@
     <string name="about_update_needs_permission">יש לאפשר ל-Beam Finder להתקין אפליקציות לא מוכרות כדי להתעדכן.</string>
     <string name="about_update_open_settings">פתח הגדרות</string>
     <string name="about_update_error">העדכון נכשל: %1$s</string>
+    <string name="about_no_releases">עדיין לא פורסמה גרסה ב־GitHub Releases.</string>
     <string name="about_update_not_supported">העדכונים מנוהלים על ידי Google Play.</string>
     <string name="about_license">קוד פתוח ברישיון MIT.</string>
 </resources>
