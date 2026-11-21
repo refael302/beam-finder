@@ -1,0 +1,43 @@
+package io.github.refael302.beamfinder.settings
+
+enum class BeamColor { Red, Green }
+enum class BeepStyle { Pulse, Tone, Click }
+enum class CameraFacing { Back, Front }
+enum class AudioStream { Alarm, Media }
+
+/**
+ * Single source of truth for user settings. Property defaults here ARE the app defaults;
+ * [SettingsRepository] falls back to [Default] for any missing key.
+ */
+data class AppSettings(
+    val beamColor: BeamColor = BeamColor.Red,
+    /** 0..100 */
+    val sensitivity: Int = 50,
+    val beepStyle: BeepStyle = BeepStyle.Pulse,
+    val cameraFacing: CameraFacing = CameraFacing.Back,
+    val pocketMode: Boolean = false,
+    val vibrate: Boolean = true,
+    /** 0..1 */
+    val volume: Float = 0.8f,
+    val audioStream: AudioStream = AudioStream.Alarm,
+    /** Detection area width, 0.1..1 of frame width */
+    val roiWidth: Float = 0.4f,
+    val lowExposure: Boolean = true,
+    /** Guide line vertical position, 0..1 of frame height */
+    val guideLineY: Float = 0.5f,
+    val guideLocked: Boolean = false,
+) {
+    /** Clamps all ranged values. */
+    fun sanitized(): AppSettings = copy(
+        sensitivity = sensitivity.coerceIn(SENSITIVITY_RANGE),
+        volume = volume.coerceIn(0f, 1f),
+        roiWidth = roiWidth.coerceIn(ROI_WIDTH_RANGE),
+        guideLineY = guideLineY.coerceIn(0f, 1f),
+    )
+
+    companion object {
+        val Default = AppSettings()
+        val SENSITIVITY_RANGE = 0..100
+        val ROI_WIDTH_RANGE = 0.1f..1f
+    }
+}

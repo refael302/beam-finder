@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Beam Finder</string>
+    <string name="back">Back</string>
+
+    <!-- Menu -->
+    <string name="menu_start">Start</string>
+    <string name="menu_settings">Settings</string>
+    <string name="menu_about">About</string>
+
+    <!-- Detect -->
+    <string name="detect_title">Detect</string>
+    <string name="detect_placeholder_note">The camera preview and detection arrive in Phase 3. This screen shows your current settings.</string>
+    <string name="detect_current_settings">Current settings</string>
+    <string name="detect_thresholds">Start threshold %1$s · Full threshold %2$s</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_section_detection">Detection</string>
+    <string name="settings_section_feedback">Feedback</string>
+    <string name="settings_section_camera">Camera</string>
+    <string name="settings_section_general">General</string>
+    <string name="setting_beam_color">Beam color</string>
+    <string name="setting_sensitivity">Sensitivity</string>
+    <string name="setting_beep_style">Beep style</string>
+    <string name="setting_camera_facing">Camera</string>
+    <string name="setting_pocket_mode">Pocket mode</string>
+    <string name="setting_vibrate">Vibrate</string>
+    <string name="setting_volume">Volume</string>
+    <string name="setting_audio_stream">Audio stream</string>
+    <string name="setting_roi_width">Detection area width</string>
+    <string name="setting_low_exposure">Low exposure</string>
+    <string name="setting_guide_line_y">Guide line position</string>
+    <string name="setting_guide_locked">Lock guide line</string>
+    <string name="setting_language">Language</string>
+
+    <string name="color_red">Red</string>
+    <string name="color_green">Green</string>
+    <string name="beep_pulse">Pulse</string>
+    <string name="beep_tone">Tone</string>
+    <string name="beep_click">Click</string>
+    <string name="camera_back">Back</string>
+    <string name="camera_front">Front</string>
+    <string name="stream_alarm">Alarm</string>
+    <string name="stream_media">Media</string>
+    <string name="language_system">System</string>
+    <string name="language_hebrew" translatable="false">עברית</string>
+    <string name="language_english" translatable="false">English</string>
+    <string name="on">On</string>
+    <string name="off">Off</string>
+
+    <!-- About -->
+    <string name="about_title">About</string>
+    <string name="about_version">Version %1$s</string>
+    <string name="about_check_update">Check for update</string>
+    <string name="about_checking">Checking…</string>
+    <string name="about_up_to_date">You are on the latest version.</string>
+    <string name="about_update_available">Version %1$s is available.</string>
+    <string name="about_update_button">Update</string>
+    <string name="about_updating">Starting update…</string>
+    <string name="about_update_error">Update failed: %1$s</string>
+    <string name="about_update_not_supported">Updates are managed by Google Play.</string>
+    <string name="about_license">Open source under the MIT license.</string>
+</resources>

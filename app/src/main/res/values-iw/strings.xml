@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">מאתר קרן</string>
+    <string name="back">חזרה</string>
+
+    <!-- Menu -->
+    <string name="menu_start">התחל</string>
+    <string name="menu_settings">הגדרות</string>
+    <string name="menu_about">אודות</string>
+
+    <!-- Detect -->
+    <string name="detect_title">זיהוי</string>
+    <string name="detect_placeholder_note">תצוגת המצלמה והזיהוי יתווספו בשלב 3. מסך זה מציג את ההגדרות הנוכחיות.</string>
+    <string name="detect_current_settings">הגדרות נוכחיות</string>
+    <string name="detect_thresholds">סף התחלה %1$s · סף מלא %2$s</string>
+
+    <!-- Settings -->
+    <string name="settings_title">הגדרות</string>
+    <string name="settings_section_detection">זיהוי</string>
+    <string name="settings_section_feedback">משוב</string>
+    <string name="settings_section_camera">מצלמה</string>
+    <string name="settings_section_general">כללי</string>
+    <string name="setting_beam_color">צבע הקרן</string>
+    <string name="setting_sensitivity">רגישות</string>
+    <string name="setting_beep_style">סגנון צפצוף</string>
+    <string name="setting_camera_facing">מצלמה</string>
+    <string name="setting_pocket_mode">מצב כיס</string>
+    <string name="setting_vibrate">רטט</string>
+    <string name="setting_volume">עוצמת קול</string>
+    <string name="setting_audio_stream">ערוץ שמע</string>
+    <string name="setting_roi_width">רוחב אזור הזיהוי</string>
+    <string name="setting_low_exposure">חשיפה נמוכה</string>
+    <string name="setting_guide_line_y">מיקום קו מנחה</string>
+    <string name="setting_guide_locked">נעילת קו מנחה</string>
+    <string name="setting_language">שפה</string>
+
+    <string name="color_red">אדום</string>
+    <string name="color_green">ירוק</string>
+    <string name="beep_pulse">פעימה</string>
+    <string name="beep_tone">צליל</string>
+    <string name="beep_click">נקישה</string>
+    <string name="camera_back">אחורית</string>
+    <string name="camera_front">קדמית</string>
+    <string name="stream_alarm">התראה</string>
+    <string name="stream_media">מדיה</string>
+    <string name="language_system">מערכת</string>
+    <string name="on">פעיל</string>
+    <string name="off">כבוי</string>
+
+    <!-- About -->
+    <string name="about_title">אודות</string>
+    <string name="about_version">גרסה %1$s</string>
+    <string name="about_check_update">בדוק עדכון</string>
+    <string name="about_checking">בודק…</string>
+    <string name="about_up_to_date">הגרסה שלך מעודכנת.</string>
+    <string name="about_update_available">גרסה %1$s זמינה.</string>
+    <string name="about_update_button">עדכן</string>
+    <string name="about_updating">מתחיל עדכון…</string>
+    <string name="about_update_error">העדכון נכשל: %1$s</string>
+    <string name="about_update_not_supported">העדכונים מנוהלים על ידי Google Play.</string>
+    <string name="about_license">קוד פתוח ברישיון MIT.</string>
+</resources>
