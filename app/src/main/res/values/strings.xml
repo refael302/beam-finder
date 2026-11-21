@@ -30,6 +30,8 @@
     <string name="detect_level">Signal level</string>
     <string name="detect_guide_lock">Lock guide line</string>
     <string name="detect_guide_unlock">Unlock guide line</string>
+    <string name="detect_quick_color_desc">Beam color: %1$s. Tap to switch.</string>
+    <string name="detect_quick_camera_desc">Camera: %1$s. Tap to switch.</string>
 
     <!-- Settings -->
     <string name="settings_title">Settings</string>

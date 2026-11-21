@@ -30,6 +30,8 @@
     <string name="detect_level">עוצמת אות</string>
     <string name="detect_guide_lock">נעל קו מנחה</string>
     <string name="detect_guide_unlock">בטל נעילת קו מנחה</string>
+    <string name="detect_quick_color_desc">צבע הקרן: %1$s. הקש להחלפה.</string>
+    <string name="detect_quick_camera_desc">מצלמה: %1$s. הקש להחלפה.</string>
 
     <!-- Settings -->
     <string name="settings_title">הגדרות</string>

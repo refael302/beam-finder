@@ -13,8 +13,21 @@ data class Rgb(val r: Int, val g: Int, val b: Int) {
         val RedLaser = Rgb(235, 25, 25)
         val GreenLaser = Rgb(25, 235, 40)
         val DullRed = Rgb(80, 50, 45)
+        /** Orange/amber flash: R and G both high. Must not trigger Red mode. */
+        val Orange = Rgb(255, 140, 30)
+        val Amber = Rgb(255, 175, 40)
+        /** Warm incandescent-ish light. */
+        val Warm = Rgb(240, 170, 100)
+        val Yellow = Rgb(230, 230, 40)
+        val YellowGreen = Rgb(170, 240, 40)
+        val Cyan = Rgb(40, 230, 230)
+        /** Red-dominant lamp (tail light / LED) used as steady ambient. */
+        val RedLamp = Rgb(220, 30, 30)
     }
 }
+
+/** Square spot of side 2*[radius]+1 centred at ([cx], [cy]). */
+data class Spot(val color: Rgb, val cx: Int, val cy: Int, val radius: Int = 3)
 
 /** Builds full-chroma-resolution YUV frames from an RGB painter (BT.601 full range). */
 object SyntheticFrames {
@@ -58,6 +71,19 @@ object SyntheticFrames {
         timestampMs: Long = 0L,
     ) = frame(width, height, timestampMs) { x, y ->
         if (x in x0 until x1 && y in (rowY - thickness / 2)..(rowY + thickness / 2)) beam else background
+    }
+
+    /** Background plus any number of square spots ([Spot]) painted on top, in order. */
+    fun spots(
+        vararg spots: Spot,
+        background: Rgb = Rgb.DimGray,
+        width: Int = 160,
+        height: Int = 60,
+        timestampMs: Long = 0L,
+        chromaStep: Int = 1,
+    ) = frame(width, height, timestampMs, chromaStep) { x, y ->
+        spots.lastOrNull { x in (it.cx - it.radius)..(it.cx + it.radius) && y in (it.cy - it.radius)..(it.cy + it.radius) }
+            ?.color ?: background
     }
 
     private fun clamp(d: Double): Int = d.roundToInt().coerceIn(0, 255)

@@ -140,7 +140,6 @@ private fun DetectContent(viewModel: DetectViewModel, modifier: Modifier = Modif
 
                 GuideOverlay(
                     guideY = session.draggingGuideY ?: s.guideLineY,
-                    roiWidth = s.roiWidth,
                     locked = s.guideLocked,
                     lineColor = s.beamColor.uiColor(),
                     onDrag = viewModel::onGuideDrag,
@@ -157,6 +156,17 @@ private fun DetectContent(viewModel: DetectViewModel, modifier: Modifier = Modif
                 )
 
                 StatusBanner(status, detection, Modifier.align(Alignment.TopCenter).padding(top = 12.dp))
+
+                QuickControls(
+                    colorLabel = stringResource(if (s.beamColor == BeamColor.Red) R.string.color_red else R.string.color_green),
+                    colorDot = s.beamColor.uiColor(),
+                    cameraLabel = stringResource(if (s.cameraFacing == CameraFacing.Back) R.string.camera_back else R.string.camera_front),
+                    onToggleColor = viewModel::toggleBeamColor,
+                    onToggleCamera = viewModel::toggleCameraFacing,
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(end = 4.dp, bottom = 4.dp),
+                )
 
                 if (session.showDebug) {
                     DebugInfo(detection, thresholds, Modifier.align(Alignment.BottomStart).padding(8.dp))
@@ -204,8 +214,8 @@ private fun DebugInfo(d: DetectionResult, thresholds: SensitivityModel.Threshold
     val b = d.breakdown
     val text = String.format(
         Locale.US,
-        "raw %.2f  int %.2f  fps %.1f\npeak %.2f  cov %.2f  glare %.2f  Y %.0f",
-        d.rawScore, d.intensity, d.fps, b.peak, b.coverage, b.glare, b.meanLuma,
+        "raw %.2f  int %.2f  fps %.1f\nflash %.2f  peak %.2f  cov %.2f  Y %.0f",
+        d.rawScore, d.intensity, d.fps, b.flash, b.peak, b.coverage, b.meanLuma,
     ) + "\n" + stringResource(
         R.string.detect_thresholds,
         String.format(Locale.US, "%.2f", thresholds.startThreshold),

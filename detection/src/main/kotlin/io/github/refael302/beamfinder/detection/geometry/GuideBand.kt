@@ -1,8 +1,10 @@
 package io.github.refael302.beamfinder.detection.geometry
 
 /**
- * The detection band: a full-width horizontal strip centred on the guide line.
- * All values are normalized to the upright (as displayed) frame height, 0..1.
+ * A full-width horizontal strip (normalized to the upright frame height, 0..1).
+ *
+ * Note: detection no longer crops to the guide line; the guide is visual only and the live
+ * pipeline scans the full frame. [of] is kept for geometry utilities/tests.
  */
 data class GuideBand(val top: Float, val bottom: Float) {
     val height: Float get() = bottom - top
@@ -16,7 +18,7 @@ data class GuideBand(val top: Float, val bottom: Float) {
         const val HALF_HEIGHT_PER_ROI = 0.25f
         private const val MIN_ROI = 0.05f
 
-        /** Business rule (SSOT) mapping guide line + roiWidth setting to the detection band. */
+        /** Maps guide line + roiWidth to a band (legacy; not used by live detection). */
         fun of(guideY: Float, roiWidth: Float): GuideBand {
             val half = roiWidth.coerceIn(MIN_ROI, 1f) * HALF_HEIGHT_PER_ROI
             val y = guideY.coerceIn(0f, 1f)

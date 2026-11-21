@@ -21,7 +21,8 @@ class YuvPlanes(
 )
 
 /**
- * Extracts the guide band from a raw (possibly rotated) YUV buffer into a compact, upright
+ * Extracts the full frame ([extractFull], used by detection) or a horizontal band from a raw
+ * (possibly rotated) YUV buffer into a compact, upright
  * [LumaChromaFrame] with full-resolution chroma. Output buffers are reused between frames, so
  * the returned frame is only valid until the next call. Not thread-safe; use one per analyzer.
  */
@@ -32,6 +33,10 @@ class BandExtractor(
     private var lumaBuf = ByteArray(0)
     private var uBuf = ByteArray(0)
     private var vBuf = ByteArray(0)
+
+    /** The whole upright frame (detection scans the full field of view, not just the guide band). */
+    fun extractFull(planes: YuvPlanes, mapper: CoordinateMapper, timestampNanos: Long): LumaChromaFrame =
+        extract(planes, mapper, FULL_FRAME, timestampNanos)
 
     fun extract(planes: YuvPlanes, mapper: CoordinateMapper, band: GuideBand, timestampNanos: Long): LumaChromaFrame {
         val step = ((mapper.uprightWidth + maxOutputWidth - 1) / maxOutputWidth).coerceAtLeast(1)
@@ -63,5 +68,9 @@ class BandExtractor(
             }
         }
         return LumaChromaFrame(outW, outH, lumaBuf, uBuf, vBuf, timestampNanos, chromaStep = 1)
+    }
+
+    private companion object {
+        val FULL_FRAME = GuideBand(top = 0f, bottom = 1f)
     }
 }

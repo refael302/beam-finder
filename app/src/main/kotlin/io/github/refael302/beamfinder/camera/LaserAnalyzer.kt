@@ -5,18 +5,17 @@ import androidx.camera.core.ImageProxy
 import io.github.refael302.beamfinder.detection.frame.BandExtractor
 import io.github.refael302.beamfinder.detection.frame.YuvPlanes
 import io.github.refael302.beamfinder.detection.geometry.CoordinateMapper
-import io.github.refael302.beamfinder.detection.geometry.GuideBand
 import io.github.refael302.beamfinder.detection.geometry.PixelRect
 import io.github.refael302.beamfinder.detection.pipeline.DetectionResult
 import io.github.refael302.beamfinder.detection.pipeline.IntensityPipeline
 import io.github.refael302.beamfinder.detection.scoring.BeamHue
-import io.github.refael302.beamfinder.detection.scoring.Roi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 /**
- * CameraX analyzer: YUV_420_888 frame -> upright guide band -> [IntensityPipeline] -> [results].
+ * CameraX analyzer: YUV_420_888 frame -> upright FULL frame (downsampled) -> [IntensityPipeline]
+ * -> [results]. The guide line is visual only and does not restrict detection.
  * Parameters are read per frame and may be changed from any thread.
  */
 class LaserAnalyzer(
@@ -25,13 +24,11 @@ class LaserAnalyzer(
     private val onResult: (DetectionResult) -> Unit = {},
 ) : ImageAnalysis.Analyzer {
 
-    @Volatile var guideY: Float = 0.5f
-    @Volatile var roiWidth: Float = 0.4f
     @Volatile var hue: BeamHue = BeamHue.Red
     /** Front camera preview is mirrored; only affects horizontal positions. */
     @Volatile var mirrored: Boolean = false
 
-    private val extractor = BandExtractor()
+    private val extractor = BandExtractor(maxOutputWidth = MAX_ANALYSIS_WIDTH)
     private val _results = MutableStateFlow(DetectionResult.Empty)
     val results: StateFlow<DetectionResult> = _results.asStateFlow()
 
@@ -56,9 +53,8 @@ class LaserAnalyzer(
                 uvRowStride = p[1].rowStride,
                 uvPixelStride = p[1].pixelStride,
             )
-            val band = GuideBand.of(guideY, roiWidth)
-            val frame = extractor.extract(planes, mapper, band, img.imageInfo.timestamp)
-            val result = pipeline.process(frame, Roi.Full, hue)
+            val frame = extractor.extractFull(planes, mapper, img.imageInfo.timestamp)
+            val result = pipeline.process(frame, hue)
             _results.value = result
             onResult(result)
         }
@@ -67,5 +63,13 @@ class LaserAnalyzer(
     /** Clears the published result (e.g. when the camera stops). */
     fun clear() {
         _results.value = DetectionResult.Empty
+    }
+
+    private companion object {
+        /**
+         * Upright analysis width cap. The 640x480 analysis stream is 480 wide when upright, so
+         * this keeps full resolution (small far spots survive); larger streams are point-sampled.
+         */
+        const val MAX_ANALYSIS_WIDTH = 480
     }
 }

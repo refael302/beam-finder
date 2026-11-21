@@ -1,6 +1,7 @@
 package io.github.refael302.beamfinder.detection.pipeline
 
 import io.github.refael302.beamfinder.detection.Rgb
+import io.github.refael302.beamfinder.detection.Spot
 import io.github.refael302.beamfinder.detection.SyntheticFrames
 import io.github.refael302.beamfinder.detection.calibration.AmbientCalibrator
 import io.github.refael302.beamfinder.detection.frame.LumaChromaFrame
@@ -18,7 +19,7 @@ class IntensityPipelineTest {
     /** Scorer whose output is set directly by the test. */
     private class FakeScorer(var value: Float = 0f) : LaserScorer {
         override fun analyze(frame: LumaChromaFrame, roi: Roi, hue: BeamHue) =
-            ScoreBreakdown(value, value, 0f, 0f, 50f)
+            ScoreBreakdown(score = value, flash = value, peak = 0f, coverage = 0f, meanLuma = 50f)
     }
 
     private val tiny = SyntheticFrames.uniform(Rgb.Black, width = 4, height = 4)
@@ -35,7 +36,7 @@ class IntensityPipelineTest {
         scorer.value = score
         var last = DetectionResult.Empty
         while (now <= untilMs) {
-            last = pipeline.process(at(now), Roi.Full, BeamHue.Red)
+            last = pipeline.process(at(now), BeamHue.Red)
             now += stepMs
         }
         return last
@@ -125,15 +126,95 @@ class IntensityPipelineTest {
         assertTrue(r.fps in 29f..32f, "fps=${r.fps}")
     }
 
-    @Test
-    fun endToEndWithRealScorer() {
+    /** Real [IntensityPipeline] (FlashDetector) fed synthetic full frames. */
+    private class EndToEnd(val hue: BeamHue = BeamHue.Red) {
         val pipeline = IntensityPipeline().apply { thresholds = SensitivityModel.thresholds(50) }
         var t = 0L
-        repeat(60) { pipeline.process(SyntheticFrames.uniform(Rgb.DimGray, t), Roi.Full, BeamHue.Red); t += 33 }
-        var last = DetectionResult.Empty
-        repeat(15) { last = pipeline.process(SyntheticFrames.horizontalLine(Rgb.RedLaser, background = Rgb.DimGray, timestampMs = t), Roi.Full, BeamHue.Red); t += 33 }
+
+        /** Runs [n] frames and returns (last result, max intensity, any detected). */
+        fun run(n: Int, vararg spots: Spot): Triple<DetectionResult, Float, Boolean> =
+            run(n) { SyntheticFrames.spots(*spots, timestampMs = it) }
+
+        fun run(
+            n: Int,
+            frameAt: (timestampMs: Long) -> io.github.refael302.beamfinder.detection.frame.LumaChromaFrame,
+        ): Triple<DetectionResult, Float, Boolean> {
+            var last = DetectionResult.Empty
+            var max = 0f
+            var any = false
+            repeat(n) {
+                last = pipeline.process(frameAt(t), hue)
+                if (!last.calibrating) {
+                    max = maxOf(max, last.intensity)
+                    any = any || last.detected
+                }
+                t += 33
+            }
+            return Triple(last, max, any)
+        }
+    }
+
+    @Test
+    fun endToEndFullFrameRedAmbientStaysQuiet() {
+        val e = EndToEnd()
+        e.run(60) // calibrate on empty scene
+        // Pan onto a full red frame, then hold — must settle (not a small laser spot).
+        e.run(5) { SyntheticFrames.uniform(Rgb.RedLaser, it) }
+        val (last, max, any) = e.run(60) { SyntheticFrames.uniform(Rgb.RedLaser, it) }
         assertFalse(last.calibrating)
-        assertTrue(last.intensity > 0.9f, "intensity=${last.intensity}")
-        assertTrue(last.detected)
+        assertTrue(max < 0.35f, "full-frame red must not stay loud: max=$max")
+        // After settle, no detection.
+        assertFalse(any && last.intensity > 0.05f)
+        assertTrue(last.intensity < 0.05f, "settled intensity=${last.intensity}")
+    }
+
+    @Test
+    fun endToEndHeldSmallLaserKeepsDetecting() {
+        val e = EndToEnd()
+        e.run(60)
+        val (last, max, any) = e.run(60, Spot(Rgb.RedLaser, 80, 30, radius = 2))
+        assertTrue(max > 0.9f, "max=$max")
+        assertTrue(any)
+        assertTrue(last.intensity > 0.5f, "held laser must keep intensity: ${last.intensity}")
+    }
+
+    @Test
+    fun endToEndSuddenRedFlashAnywhereDetects() {
+        val e = EndToEnd()
+        e.run(60)
+        // Small spot far from the centre / guide line (top-right corner).
+        val (_, max, any) = e.run(8, Spot(Rgb.RedLaser, 150, 4, radius = 1))
+        assertTrue(max > 0.9f, "max=$max")
+        assertTrue(any)
+    }
+
+    @Test
+    fun endToEndOrangeFlashIsIgnoredInRedMode() {
+        val e = EndToEnd()
+        e.run(60)
+        val (_, max, any) = e.run(15, Spot(Rgb.Orange, 80, 30, radius = 4))
+        assertTrue(max < 0.05f, "max=$max")
+        assertFalse(any)
+    }
+
+    @Test
+    fun endToEndGreenFlashDetectsInGreenMode() {
+        val e = EndToEnd(BeamHue.Green)
+        e.run(60)
+        assertFalse(e.run(15, Spot(Rgb.Yellow, 80, 30)).third, "yellow must not trigger green mode")
+        val (_, max, any) = e.run(8, Spot(Rgb.GreenLaser, 40, 50, radius = 2))
+        assertTrue(max > 0.9f, "max=$max")
+        assertTrue(any)
+    }
+
+    @Test
+    fun sweepingPastTheBeamBeepsEachPass() {
+        val e = EndToEnd()
+        e.run(60)
+        repeat(3) { pass ->
+            val (_, max, any) = e.run(3, Spot(Rgb.RedLaser, 30 + pass * 40, 30, radius = 2))
+            assertTrue(max > 0.5f && any, "pass $pass max=$max")
+            e.run(45) // beam out of view; intensity releases
+        }
     }
 }

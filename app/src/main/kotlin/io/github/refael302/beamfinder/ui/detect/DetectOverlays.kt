@@ -12,6 +12,13 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.filled.Cameraswitch
+import androidx.compose.material3.minimumInteractiveComponentSize
+import androidx.compose.ui.semantics.Role
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
@@ -74,7 +81,6 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import io.github.refael302.beamfinder.R
-import io.github.refael302.beamfinder.detection.geometry.GuideBand
 import io.github.refael302.beamfinder.detection.sensitivity.SensitivityModel
 import kotlin.math.roundToInt
 
@@ -107,13 +113,13 @@ fun Modifier.pinchToZoom(onZoom: (Float) -> Unit): Modifier = pointerInput(Unit)
 }
 
 /**
- * Full-width guide line with its detection band. Drag the line vertically to move it
- * (unless locked); the lock button sits at the line's end. Draw this in an LTR subtree.
+ * Full-width guide line marking the lens/height reference. VISUAL ONLY: detection scans the
+ * whole frame. Drag the line vertically to move it (unless locked); the lock button sits at the
+ * line's end. Draw this in an LTR subtree.
  */
 @Composable
 fun GuideOverlay(
     guideY: Float,
-    roiWidth: Float,
     locked: Boolean,
     lineColor: Color,
     onDrag: (Float) -> Unit,
@@ -126,19 +132,8 @@ fun GuideOverlay(
         val density = LocalDensity.current
         val touchPx = with(density) { TOUCH_HEIGHT.toPx() }
         val buttonPx = with(density) { LOCK_BUTTON.toPx() }
-        val band = GuideBand.of(guideY, roiWidth)
 
         Canvas(Modifier.fillMaxSize()) {
-            val top = band.top * size.height
-            val bottom = band.bottom * size.height
-            drawRect(
-                color = lineColor.copy(alpha = 0.10f),
-                topLeft = Offset(0f, top),
-                size = Size(size.width, bottom - top),
-            )
-            val dash = PathEffect.dashPathEffect(floatArrayOf(12f, 10f))
-            drawLine(Color.White.copy(alpha = 0.5f), Offset(0f, top), Offset(size.width, top), 1.dp.toPx(), pathEffect = dash)
-            drawLine(Color.White.copy(alpha = 0.5f), Offset(0f, bottom), Offset(size.width, bottom), 1.dp.toPx(), pathEffect = dash)
             val y = guideY * size.height
             drawLine(Color.Black.copy(alpha = 0.5f), Offset(0f, y), Offset(size.width, y), 4.dp.toPx())
             drawLine(
@@ -190,6 +185,69 @@ fun GuideOverlay(
         ) {
             Icon(if (locked) Icons.Filled.Lock else Icons.Outlined.Lock, contentDescription = null)
         }
+    }
+}
+
+/**
+ * Compact quick controls for beam colour and camera, drawn as two small translucent pills.
+ * Keep them in a corner of the (LTR) camera overlay so they barely cover the preview.
+ */
+@Composable
+fun QuickControls(
+    colorLabel: String,
+    colorDot: Color,
+    cameraLabel: String,
+    onToggleColor: () -> Unit,
+    onToggleCamera: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val colorDesc = stringResource(R.string.detect_quick_color_desc, colorLabel)
+    val cameraDesc = stringResource(R.string.detect_quick_camera_desc, cameraLabel)
+    Column(modifier, verticalArrangement = Arrangement.spacedBy(2.dp), horizontalAlignment = Alignment.End) {
+        QuickPill(onClick = onToggleColor, description = colorDesc) {
+            Box(
+                Modifier
+                    .size(10.dp)
+                    .clip(CircleShape)
+                    .background(colorDot),
+            )
+            Text(colorLabel, color = Color.White, style = MaterialTheme.typography.labelMedium)
+        }
+        QuickPill(onClick = onToggleCamera, description = cameraDesc) {
+            Icon(
+                Icons.Filled.Cameraswitch,
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.size(14.dp),
+            )
+            Text(cameraLabel, color = Color.White, style = MaterialTheme.typography.labelMedium)
+        }
+    }
+}
+
+@Composable
+private fun QuickPill(
+    onClick: () -> Unit,
+    description: String,
+    content: @Composable RowScope.() -> Unit,
+) {
+    // Visual pill stays small; the touch target is padded to the 48dp minimum invisibly.
+    Box(
+        Modifier
+            .minimumInteractiveComponentSize()
+            .clip(RoundedCornerShape(14.dp))
+            .clickable(onClick = onClick, role = Role.Button)
+            .semantics(mergeDescendants = true) { contentDescription = description },
+        contentAlignment = Alignment.Center,
+    ) {
+        Row(
+            Modifier
+                .background(Color.Black.copy(alpha = 0.45f), RoundedCornerShape(14.dp))
+                .padding(horizontal = 8.dp, vertical = 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(5.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            content = content,
+        )
     }
 }
 

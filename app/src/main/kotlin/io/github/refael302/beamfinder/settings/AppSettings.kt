@@ -20,7 +20,10 @@ data class AppSettings(
     /** 0..1 */
     val volume: Float = 0.8f,
     val audioStream: AudioStream = AudioStream.Alarm,
-    /** Detection area width, 0.1..1 of frame width */
+    /**
+     * Detection area width, 0.1..1. Currently UNUSED by detection (the full frame is scanned and
+     * the guide line is visual only); kept for settings compatibility / future max-spot-size use.
+     */
     val roiWidth: Float = 0.4f,
     val lowExposure: Boolean = true,
     /** Guide line vertical position, 0..1 of frame height */

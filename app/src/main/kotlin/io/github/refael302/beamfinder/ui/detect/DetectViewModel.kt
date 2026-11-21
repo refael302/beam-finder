@@ -11,6 +11,7 @@ import io.github.refael302.beamfinder.detection.scoring.BeamHue
 import io.github.refael302.beamfinder.detection.sensitivity.SensitivityModel
 import io.github.refael302.beamfinder.settings.AppSettings
 import io.github.refael302.beamfinder.settings.BeamColor
+import io.github.refael302.beamfinder.settings.CameraFacing
 import io.github.refael302.beamfinder.settings.SettingsRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -60,9 +61,8 @@ class DetectViewModel(
     init {
         viewModelScope.launch {
             settings.collect { s ->
-                analyzer.roiWidth = s.roiWidth
+                // Guide line / roiWidth are visual only; detection scans the full frame.
                 analyzer.hue = s.beamColor.toHue()
-                if (_session.value.draggingGuideY == null) analyzer.guideY = s.guideLineY
                 pipeline.thresholds = SensitivityModel.thresholds(s.sensitivity)
                 beepEngine.configure(s)
             }
@@ -130,7 +130,6 @@ class DetectViewModel(
     fun onGuideDrag(y: Float) {
         if (settings.value.guideLocked) return
         val v = y.coerceIn(0f, 1f)
-        analyzer.guideY = v
         _session.update { it.copy(draggingGuideY = v) }
     }
 
@@ -144,6 +143,24 @@ class DetectViewModel(
 
     fun toggleGuideLock() {
         viewModelScope.launch { repository.update { it.copy(guideLocked = !it.guideLocked) } }
+    }
+
+    /** Quick control: Red <-> Green (persisted; the colour change triggers recalibration). */
+    fun toggleBeamColor() {
+        viewModelScope.launch {
+            repository.update {
+                it.copy(beamColor = if (it.beamColor == BeamColor.Red) BeamColor.Green else BeamColor.Red)
+            }
+        }
+    }
+
+    /** Quick control: Back <-> Front camera (persisted; DetectScreen rebinds on change). */
+    fun toggleCameraFacing() {
+        viewModelScope.launch {
+            repository.update {
+                it.copy(cameraFacing = if (it.cameraFacing == CameraFacing.Back) CameraFacing.Front else CameraFacing.Back)
+            }
+        }
     }
 
     override fun onCleared() {

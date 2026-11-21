@@ -4,7 +4,7 @@ import io.github.refael302.beamfinder.detection.calibration.AmbientCalibrator
 import io.github.refael302.beamfinder.detection.calibration.Calibrator
 import io.github.refael302.beamfinder.detection.frame.LumaChromaFrame
 import io.github.refael302.beamfinder.detection.scoring.BeamHue
-import io.github.refael302.beamfinder.detection.scoring.ColorLaserScorer
+import io.github.refael302.beamfinder.detection.scoring.FlashDetector
 import io.github.refael302.beamfinder.detection.scoring.LaserScorer
 import io.github.refael302.beamfinder.detection.scoring.Roi
 import io.github.refael302.beamfinder.detection.scoring.ScoreBreakdown
@@ -52,13 +52,14 @@ data class PipelineParams(
 
 /**
  * Frame -> intensity (0..1) pipeline:
- * score -> ambient calibration -> normalize vs baseline -> peak-hold -> EMA -> hysteresis.
+ * full-frame flash score ([FlashDetector]) -> ambient calibration -> normalize vs baseline ->
+ * peak-hold -> EMA -> hysteresis. Sensitivity enters via [thresholds].
  *
  * Frame timing comes from [LumaChromaFrame.timestampNanos]. [process] must be called from a
  * single thread; [recalibrate] and [thresholds] may be set from any thread.
  */
 class IntensityPipeline(
-    private val scorer: LaserScorer = ColorLaserScorer(),
+    private val scorer: LaserScorer = FlashDetector(),
     private val calibrator: Calibrator = AmbientCalibrator(),
     private val params: PipelineParams = PipelineParams(),
 ) {
@@ -75,10 +76,11 @@ class IntensityPipeline(
     private var smoothed = 0f
     private var detected = false
 
-    fun process(frame: LumaChromaFrame, roi: Roi, hue: BeamHue): DetectionResult {
+    fun process(frame: LumaChromaFrame, hue: BeamHue, roi: Roi = Roi.Full): DetectionResult {
         if (recalibrateRequested) {
             recalibrateRequested = false
             calibrator.reset()
+            scorer.reset()
             resetSmoothing()
         }
         val nowMs = frame.timestampNanos / 1_000_000L
