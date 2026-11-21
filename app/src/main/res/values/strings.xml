@@ -10,9 +10,26 @@
 
     <!-- Detect -->
     <string name="detect_title">Detect</string>
-    <string name="detect_placeholder_note">The camera preview and detection arrive in Phase 3. This screen shows your current settings.</string>
-    <string name="detect_current_settings">Current settings</string>
     <string name="detect_thresholds">Start threshold %1$s · Full threshold %2$s</string>
+    <string name="detect_permission_title">Camera access needed</string>
+    <string name="detect_permission_body">Beam Finder uses the camera to detect the laser beam. Frames are analyzed on the device and are never saved or sent.</string>
+    <string name="detect_permission_denied">Camera permission is turned off. Enable it in the app settings to use detection.</string>
+    <string name="detect_permission_grant">Allow camera</string>
+    <string name="detect_permission_settings">Open app settings</string>
+    <string name="detect_no_camera">No camera available on this device.</string>
+    <string name="detect_camera_error">Camera failed to start: %1$s</string>
+    <string name="detect_calibrating">Calibrating… keep the beam out of view</string>
+    <string name="detect_beam_detected">Beam detected</string>
+    <string name="detect_zoom">Zoom</string>
+    <string name="detect_lock_exposure">Lock exposure</string>
+    <string name="detect_lock_focus">Lock focus</string>
+    <string name="detect_calibrate">Calibrate</string>
+    <string name="detect_pocket">Pocket</string>
+    <string name="detect_pocket_unlock_hint">Long-press to unlock</string>
+    <string name="detect_debug">Debug</string>
+    <string name="detect_level">Signal level</string>
+    <string name="detect_guide_lock">Lock guide line</string>
+    <string name="detect_guide_unlock">Unlock guide line</string>
 
     <!-- Settings -->
     <string name="settings_title">Settings</string>

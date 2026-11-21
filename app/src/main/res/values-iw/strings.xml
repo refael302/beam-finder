@@ -10,9 +10,26 @@
 
     <!-- Detect -->
     <string name="detect_title">זיהוי</string>
-    <string name="detect_placeholder_note">תצוגת המצלמה והזיהוי יתווספו בשלב 3. מסך זה מציג את ההגדרות הנוכחיות.</string>
-    <string name="detect_current_settings">הגדרות נוכחיות</string>
     <string name="detect_thresholds">סף התחלה %1$s · סף מלא %2$s</string>
+    <string name="detect_permission_title">נדרשת גישה למצלמה</string>
+    <string name="detect_permission_body">מאתר קרן משתמש במצלמה כדי לזהות את קרן הלייזר. התמונות מנותחות במכשיר בלבד ואינן נשמרות או נשלחות.</string>
+    <string name="detect_permission_denied">הרשאת המצלמה כבויה. יש להפעיל אותה בהגדרות האפליקציה כדי להשתמש בזיהוי.</string>
+    <string name="detect_permission_grant">אפשר מצלמה</string>
+    <string name="detect_permission_settings">פתח הגדרות אפליקציה</string>
+    <string name="detect_no_camera">אין מצלמה זמינה במכשיר.</string>
+    <string name="detect_camera_error">הפעלת המצלמה נכשלה: %1$s</string>
+    <string name="detect_calibrating">מכייל… יש להרחיק את הקרן מהתמונה</string>
+    <string name="detect_beam_detected">זוהתה קרן</string>
+    <string name="detect_zoom">זום</string>
+    <string name="detect_lock_exposure">נעילת חשיפה</string>
+    <string name="detect_lock_focus">נעילת מיקוד</string>
+    <string name="detect_calibrate">כייל</string>
+    <string name="detect_pocket">כיס</string>
+    <string name="detect_pocket_unlock_hint">לחיצה ארוכה לביטול הנעילה</string>
+    <string name="detect_debug">ניפוי באגים</string>
+    <string name="detect_level">עוצמת אות</string>
+    <string name="detect_guide_lock">נעל קו מנחה</string>
+    <string name="detect_guide_unlock">בטל נעילת קו מנחה</string>
 
     <!-- Settings -->
     <string name="settings_title">הגדרות</string>

@@ -22,7 +22,9 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Lint, unit tests, assemble debug
-        run: ./gradlew lint :detection:test assembleGithubDebug --stacktrace
+        run: |
+          chmod +x gradlew
+          ./gradlew lint :detection:test assembleGithubDebug --stacktrace
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
