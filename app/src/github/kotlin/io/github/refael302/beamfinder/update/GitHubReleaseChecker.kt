@@ -50,7 +50,8 @@ class GitHubReleaseChecker(
 
             if (latest <= current) return UpdateResult.UpToDate
 
-            val apk = release.assets.firstOrNull { it.name.endsWith(".apk", ignoreCase = true) }
+            val apks = release.assets.filter { it.name.endsWith(".apk", ignoreCase = true) }
+            val apk = apks.firstOrNull { PREFERRED_ASSET.matches(it.name) } ?: apks.firstOrNull()
             return UpdateResult.Available(
                 UpdateInfo(
                     versionName = latest.toString(),
@@ -60,6 +61,11 @@ class GitHubReleaseChecker(
                 ),
             )
         }
+    }
+
+    private companion object {
+        /** beam-finder-github-*.apk */
+        val PREFERRED_ASSET = Regex("^beam-finder-github-.*\\.apk$", RegexOption.IGNORE_CASE)
     }
 
     @Serializable

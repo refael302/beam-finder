@@ -74,7 +74,9 @@
     <string name="about_up_to_date">You are on the latest version.</string>
     <string name="about_update_available">Version %1$s is available.</string>
     <string name="about_update_button">Update</string>
-    <string name="about_updating">Starting update…</string>
+    <string name="about_updating">Downloading and installing update…</string>
+    <string name="about_update_needs_permission">Allow Beam Finder to install unknown apps to update.</string>
+    <string name="about_update_open_settings">Open settings</string>
     <string name="about_update_error">Update failed: %1$s</string>
     <string name="about_update_not_supported">Updates are managed by Google Play.</string>
     <string name="about_license">Open source under the MIT license.</string>

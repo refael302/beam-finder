@@ -23,6 +23,9 @@ interface UpdateChecker {
 sealed interface InstallResult {
     data object Started : InstallResult
     data object NotSupported : InstallResult
+
+    /** User must allow "install unknown apps" for this app first. */
+    data object NeedsPermission : InstallResult
     data class Error(val message: String) : InstallResult
 }
 

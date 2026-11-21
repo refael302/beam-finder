@@ -8,4 +8,4 @@ import okhttp3.OkHttpClient
 fun createUpdateChecker(context: Context, client: OkHttpClient): UpdateChecker = PlayUpdateChecker()
 
 @Suppress("UNUSED_PARAMETER")
-fun createUpdateInstaller(context: Context): UpdateInstaller = PlayUpdateInstaller()
+fun createUpdateInstaller(context: Context, client: OkHttpClient): UpdateInstaller = PlayUpdateInstaller()

@@ -18,5 +18,5 @@ class AppContainer(context: Context) {
 
     val updateChecker: UpdateChecker by lazy { createUpdateChecker(appContext, httpClient) }
 
-    val updateInstaller: UpdateInstaller by lazy { createUpdateInstaller(appContext) }
+    val updateInstaller: UpdateInstaller by lazy { createUpdateInstaller(appContext, httpClient) }
 }

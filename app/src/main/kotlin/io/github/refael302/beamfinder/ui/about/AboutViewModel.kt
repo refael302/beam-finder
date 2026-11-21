@@ -19,6 +19,7 @@ sealed interface UpdateUiState {
     data object NotSupported : UpdateUiState
     data class Available(val info: UpdateInfo) : UpdateUiState
     data object Installing : UpdateUiState
+    data class NeedsPermission(val info: UpdateInfo) : UpdateUiState
     data class Error(val message: String) : UpdateUiState
 }
 
@@ -45,12 +46,17 @@ class AboutViewModel(
     }
 
     fun install() {
-        val available = _state.value as? UpdateUiState.Available ?: return
+        val info = when (val s = _state.value) {
+            is UpdateUiState.Available -> s.info
+            is UpdateUiState.NeedsPermission -> s.info
+            else -> return
+        }
         _state.value = UpdateUiState.Installing
         viewModelScope.launch {
-            _state.value = when (val r = installer.install(available.info)) {
+            _state.value = when (val r = installer.install(info)) {
                 InstallResult.Started -> UpdateUiState.Installing
                 InstallResult.NotSupported -> UpdateUiState.NotSupported
+                InstallResult.NeedsPermission -> UpdateUiState.NeedsPermission(info)
                 is InstallResult.Error -> UpdateUiState.Error(r.message)
             }
         }

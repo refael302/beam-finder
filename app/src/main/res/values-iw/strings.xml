@@ -72,7 +72,9 @@
     <string name="about_up_to_date">הגרסה שלך מעודכנת.</string>
     <string name="about_update_available">גרסה %1$s זמינה.</string>
     <string name="about_update_button">עדכן</string>
-    <string name="about_updating">מתחיל עדכון…</string>
+    <string name="about_updating">מוריד ומתקין עדכון…</string>
+    <string name="about_update_needs_permission">יש לאפשר ל-Beam Finder להתקין אפליקציות לא מוכרות כדי להתעדכן.</string>
+    <string name="about_update_open_settings">פתח הגדרות</string>
     <string name="about_update_error">העדכון נכשל: %1$s</string>
     <string name="about_update_not_supported">העדכונים מנוהלים על ידי Google Play.</string>
     <string name="about_license">קוד פתוח ברישיון MIT.</string>

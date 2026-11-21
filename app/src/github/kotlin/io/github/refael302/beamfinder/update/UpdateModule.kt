@@ -7,5 +7,5 @@ import okhttp3.OkHttpClient
 fun createUpdateChecker(context: Context, client: OkHttpClient): UpdateChecker =
     GitHubReleaseChecker(client)
 
-fun createUpdateInstaller(context: Context): UpdateInstaller =
-    GitHubUpdateInstaller(context.applicationContext)
+fun createUpdateInstaller(context: Context, client: OkHttpClient): UpdateInstaller =
+    GitHubUpdateInstaller(context.applicationContext, client)

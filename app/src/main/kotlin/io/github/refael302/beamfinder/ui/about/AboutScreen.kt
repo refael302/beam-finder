@@ -1,5 +1,8 @@
 package io.github.refael302.beamfinder.ui.about
 
+import android.content.Intent
+import android.net.Uri
+import android.provider.Settings
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,6 +16,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -28,6 +32,7 @@ fun AboutScreen(
     viewModel: AboutViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val context = LocalContext.current
 
     Scaffold(topBar = { BeamTopBar(stringResource(R.string.about_title), onBack) }) { padding ->
         Column(
@@ -60,6 +65,7 @@ fun AboutScreen(
                 is UpdateUiState.Available ->
                     stringResource(R.string.about_update_available, st.info.versionName)
                 UpdateUiState.Installing -> stringResource(R.string.about_updating)
+                is UpdateUiState.NeedsPermission -> stringResource(R.string.about_update_needs_permission)
                 is UpdateUiState.Error -> stringResource(R.string.about_update_error, st.message)
             }
             if (statusText != null) {
@@ -68,6 +74,25 @@ fun AboutScreen(
 
             if (state is UpdateUiState.Available) {
                 Button(onClick = viewModel::install, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.about_update_button))
+                }
+            }
+            if (state is UpdateUiState.NeedsPermission) {
+                Button(
+                    onClick = {
+                        context.startActivity(
+                            Intent(
+                                Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                                Uri.parse("package:${context.packageName}"),
+                            ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+                        )
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(stringResource(R.string.about_update_open_settings))
+                }
+                // Retry after the user returns from settings.
+                OutlinedButton(onClick = viewModel::install, modifier = Modifier.fillMaxWidth()) {
                     Text(stringResource(R.string.about_update_button))
                 }
             }
