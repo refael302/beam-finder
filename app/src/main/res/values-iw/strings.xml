@@ -69,9 +69,17 @@
     <string name="about_update_available">גרסה %1$s זמינה.</string>
     <string name="about_update_button">עדכן</string>
     <string name="about_updating">מוריד ומתקין עדכון…</string>
+    <string name="about_update_downloading_progress">מוריד… %1$d%% (%2$.1f / %3$.1f MB)</string>
+    <string name="about_update_downloading_bytes">מוריד… %1$.1f MB</string>
+    <string name="about_update_preparing">מכין התקנה…</string>
+    <string name="about_update_confirm">אשר את העדכון בחלון המערכת.</string>
+    <string name="about_update_cancel">ביטול</string>
+    <string name="about_update_open_release">פתח דף הגרסה</string>
     <string name="about_update_needs_permission">יש לאפשר ל-Beam Finder להתקין אפליקציות לא מוכרות כדי להתעדכן.</string>
     <string name="about_update_open_settings">פתח הגדרות</string>
     <string name="about_update_error">העדכון נכשל: %1$s</string>
+    <string name="about_update_cancelled">העדכון בוטל.</string>
+    <string name="about_update_signature_mismatch">ההתקנה נחסמה (מפתח חתימה שונה). הסירו את Beam Finder ואז התקינו את ה־APK מדף הגרסה ב־GitHub.</string>
     <string name="about_no_releases">עדיין לא פורסמה גרסה ב־GitHub Releases.</string>
     <string name="about_update_not_supported">העדכונים מנוהלים על ידי Google Play.</string>
     <string name="about_license">קוד פתוח ברישיון MIT.</string>

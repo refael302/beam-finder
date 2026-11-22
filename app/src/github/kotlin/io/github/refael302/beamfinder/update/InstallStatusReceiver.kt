@@ -10,6 +10,9 @@ import android.os.Build
 class InstallStatusReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val status = intent.getIntExtra(PackageInstaller.EXTRA_STATUS, PackageInstaller.STATUS_FAILURE)
+        val sessionId = intent.getIntExtra(PackageInstaller.EXTRA_SESSION_ID, -1)
+        val message = intent.getStringExtra(PackageInstaller.EXTRA_STATUS_MESSAGE)
+
         if (status == PackageInstaller.STATUS_PENDING_USER_ACTION) {
             val confirm: Intent? = if (Build.VERSION.SDK_INT >= 33) {
                 intent.getParcelableExtra(Intent.EXTRA_INTENT, Intent::class.java)
@@ -17,11 +20,35 @@ class InstallStatusReceiver : BroadcastReceiver() {
                 @Suppress("DEPRECATION")
                 intent.getParcelableExtra(Intent.EXTRA_INTENT)
             }
-            confirm?.let {
-                it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                context.startActivity(it)
+            if (confirm != null) {
+                confirm.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                runCatching { context.startActivity(confirm) }
+                    .onFailure {
+                        if (sessionId >= 0) {
+                            InstallStatusHub.complete(
+                                sessionId,
+                                InstallStatusHub.Status(
+                                    PackageInstaller.STATUS_FAILURE,
+                                    it.message ?: "Could not open install confirmation",
+                                ),
+                            )
+                        }
+                    }
+            } else if (sessionId >= 0) {
+                InstallStatusHub.complete(
+                    sessionId,
+                    InstallStatusHub.Status(
+                        PackageInstaller.STATUS_FAILURE,
+                        "Missing install confirmation intent",
+                    ),
+                )
             }
+            // Keep waiting for the final SUCCESS / FAILURE after the user acts.
+            return
         }
-        // SUCCESS / failures: the system replaces or keeps the app; nothing else to do.
+
+        if (sessionId >= 0) {
+            InstallStatusHub.complete(sessionId, InstallStatusHub.Status(status, message))
+        }
     }
 }

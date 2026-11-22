@@ -17,6 +17,17 @@ android {
         versionName = "0.1.4"
     }
 
+    // Stable key for GitHub sideload OTA. CI debug keystores are ephemeral per runner,
+    // so unsigned-with-default-debug builds cannot update each other.
+    signingConfigs {
+        create("github") {
+            storeFile = file("signing/github-distribution.keystore")
+            storePassword = "beamfinder-github-ota"
+            keyAlias = "beamfinder"
+            keyPassword = "beamfinder-github-ota"
+        }
+    }
+
     flavorDimensions += "distribution"
     productFlavors {
         create("github") {
@@ -30,6 +41,8 @@ android {
     }
 
     buildTypes {
+        // Build-type signing wins over flavor signing; pin github* variants below.
+        debug { }
         release {
             isMinifyEnabled = true
             isShrinkResources = true
@@ -53,6 +66,15 @@ android {
 
 kotlin {
     jvmToolchain(17)
+}
+
+// Debug buildType's default keystore otherwise overrides the flavor. Force the stable
+// github key on every github variant so Release APKs can update each other.
+androidComponents {
+    onVariants(selector().withFlavor("distribution" to "github")) { variant ->
+        val cfg = android.signingConfigs.getByName("github")
+        variant.signingConfig.setConfig(cfg)
+    }
 }
 
 dependencies {

@@ -30,6 +30,9 @@ Requires JDK 17 and the Android SDK. If `gradlew` is missing, generate it with `
 ./gradlew :app:assembleGithubDebug
 ```
 
+GitHub-flavor APKs are signed with a stable sideload keystore (`app/signing/`) so About →
+Check for update can install newer Releases over older ones. Play flavor is separate.
+
 ## License
 
 MIT, see [LICENSE](LICENSE).

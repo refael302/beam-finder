@@ -20,8 +20,15 @@ interface UpdateChecker {
     suspend fun check(currentVersion: String): UpdateResult
 }
 
+sealed interface InstallProgress {
+    /** [totalBytes] is null when the server did not send Content-Length. */
+    data class Downloading(val bytesRead: Long, val totalBytes: Long?) : InstallProgress
+    data object Preparing : InstallProgress
+    data object AwaitingConfirmation : InstallProgress
+}
+
 sealed interface InstallResult {
-    data object Started : InstallResult
+    data object Success : InstallResult
     data object NotSupported : InstallResult
 
     /** User must allow "install unknown apps" for this app first. */
@@ -29,6 +36,15 @@ sealed interface InstallResult {
     data class Error(val message: String) : InstallResult
 }
 
+/** Stable InstallResult.Error.message values mapped to UI strings. */
+object InstallErrorCodes {
+    const val CANCELLED = "install_cancelled"
+    const val SIGNATURE = "signature_mismatch"
+}
+
 interface UpdateInstaller {
-    suspend fun install(info: UpdateInfo): InstallResult
+    suspend fun install(
+        info: UpdateInfo,
+        onProgress: (InstallProgress) -> Unit = {},
+    ): InstallResult
 }
