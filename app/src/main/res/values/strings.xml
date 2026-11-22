@@ -4,6 +4,7 @@
     <string name="back">Back</string>
 
     <!-- Menu -->
+    <string name="menu_tagline">Find laser beams with your camera</string>
     <string name="menu_start">Start</string>
     <string name="menu_settings">Settings</string>
     <string name="menu_about">About</string>
@@ -22,6 +23,9 @@
     <string name="detect_beam_detected">Beam detected</string>
     <string name="detect_zoom">Zoom</string>
     <string name="detect_sensitivity_auto">Auto</string>
+    <string name="detect_panel_locks">Locks</string>
+    <string name="detect_panel_actions">Actions</string>
+    <string name="detect_panel_advanced">Advanced</string>
     <string name="detect_lock_exposure">Lock exposure</string>
     <string name="detect_lock_focus">Lock focus</string>
     <string name="detect_calibrate">Calibrate</string>
@@ -43,7 +47,6 @@
     <string name="setting_beep_style">Beep style</string>
     <string name="setting_vibrate">Vibrate</string>
     <string name="setting_audio_stream">Audio stream</string>
-    <string name="setting_roi_width">Detection area width</string>
     <string name="setting_low_exposure">Low exposure</string>
     <string name="setting_language">Language</string>
 
@@ -108,16 +111,15 @@
     <string name="help_detect_quick_title">Color / camera pills</string>
     <string name="help_detect_quick">Quick toggles for beam color (red/green) and front/back camera.</string>
     <string name="help_detect_zoom">Vertical slider on the lower right of the preview: up zooms in, down zooms out. Pinch on the preview also adjusts this value.</string>
-    <string name="help_detect_sensitivity">Opens the sensitivity slider for this session. Higher values detect weaker beams sooner.</string>
+    <string name="help_detect_sensitivity">Opens the Sensitivity panel with the session slider. Higher values detect weaker beams sooner.</string>
     <string name="help_detect_sensitivity_auto">Tunes sensitivity from the strongest dazzle in the current session. After 30 seconds without a dazzle, a new session starts.</string>
-    <string name="help_detect_lock_exposure">Locks auto-exposure and white balance so lighting stays stable while you aim.</string>
-    <string name="help_detect_lock_focus">Runs one focus pass, then holds focus.</string>
-    <string name="help_detect_calibrate">Recalibrates ambient baseline. Keep the beam out of view while calibrating.</string>
-    <string name="help_detect_pocket">Dims the screen and hides system bars for discreet use (Detect screen button). Long-press to unlock.</string>
-    <string name="help_detect_debug">Shows raw detection metrics on the preview for diagnostics.</string>
+    <string name="help_detect_lock_exposure">Under Locks: locks auto-exposure and white balance so lighting stays stable while you aim.</string>
+    <string name="help_detect_lock_focus">Under Locks: runs one focus pass, then holds focus.</string>
+    <string name="help_detect_calibrate">Under Actions: recalibrates ambient baseline. Keep the beam out of view while calibrating.</string>
+    <string name="help_detect_pocket">Under Actions: dims the screen and hides system bars for discreet use. Long-press to unlock.</string>
+    <string name="help_detect_debug">Under Advanced: shows raw detection metrics on the preview for diagnostics.</string>
     <string name="help_detect_settings">Gear in the Detect top bar opens Settings without returning to the menu.</string>
     <string name="help_section_settings">Settings</string>
-    <string name="help_setting_roi_width">Reserved for future detection-area limits. Detection currently scans the full frame.</string>
     <string name="help_setting_beep_style">Sound style used when a beam is detected.</string>
     <string name="help_setting_audio_stream">Alarm stream (can play over silent mode on many devices) or media stream. Use the device volume keys for loudness.</string>
     <string name="help_setting_vibrate">Vibrate in sync with beeps. Off by default on a fresh install.</string>

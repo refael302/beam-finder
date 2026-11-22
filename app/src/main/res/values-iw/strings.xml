@@ -4,6 +4,7 @@
     <string name="back">חזרה</string>
 
     <!-- Menu -->
+    <string name="menu_tagline">זיהוי קרן לייזר דרך המצלמה</string>
     <string name="menu_start">התחל</string>
     <string name="menu_settings">הגדרות</string>
     <string name="menu_about">אודות</string>
@@ -22,6 +23,9 @@
     <string name="detect_beam_detected">זוהתה קרן</string>
     <string name="detect_zoom">זום</string>
     <string name="detect_sensitivity_auto">אוטומטי</string>
+    <string name="detect_panel_locks">נעילות</string>
+    <string name="detect_panel_actions">פעולות</string>
+    <string name="detect_panel_advanced">מתקדם</string>
     <string name="detect_lock_exposure">נעילת חשיפה</string>
     <string name="detect_lock_focus">נעילת מיקוד</string>
     <string name="detect_calibrate">כייל</string>
@@ -43,7 +47,6 @@
     <string name="setting_beep_style">סגנון צפצוף</string>
     <string name="setting_vibrate">רטט</string>
     <string name="setting_audio_stream">ערוץ שמע</string>
-    <string name="setting_roi_width">רוחב אזור הזיהוי</string>
     <string name="setting_low_exposure">חשיפה נמוכה</string>
     <string name="setting_language">שפה</string>
 
@@ -105,16 +108,15 @@
     <string name="help_detect_quick_title">צבע / מצלמה</string>
     <string name="help_detect_quick">החלפה מהירה של צבע הקרן (אדום/ירוק) ומצלמה קדמית/אחורית.</string>
     <string name="help_detect_zoom">סליידר אנכי בצד ימין למטה של התצוגה: למעלה זום פנימה, למטה התרחקות. צביטה על התצוגה משנה גם את הערך הזה.</string>
-    <string name="help_detect_sensitivity">פותח את סליידר הרגישות לסשן הנוכחי. ערך גבוה יותר מזהה קרניים חלשות מוקדם יותר.</string>
+    <string name="help_detect_sensitivity">פותח את פאנל הרגישות עם הסליידר לסשן הנוכחי. ערך גבוה יותר מזהה קרניים חלשות מוקדם יותר.</string>
     <string name="help_detect_sensitivity_auto">מכוון רגישות לפי הסנוור החזק ביותר בסשן. אחרי 30 שניות בלי סנוור מתחיל סשן חדש.</string>
-    <string name="help_detect_lock_exposure">נועל חשיפה ואיזון לבן כדי שהתאורה תישאר יציבה בזמן כיוון.</string>
-    <string name="help_detect_lock_focus">מבצע מיקוד חד־פעמי ושומר אותו.</string>
-    <string name="help_detect_calibrate">מכייל מחדש את קו הבסיס הסביבתי. יש להרחיק את הקרן מהתמונה בזמן הכיול.</string>
-    <string name="help_detect_pocket">עמעום מסך והסתרת סרגלי מערכת לשימוש דיסקרטי (כפתור במסך הזיהוי). לחיצה ארוכה לביטול הנעילה.</string>
-    <string name="help_detect_debug">מציג מדדי זיהוי גולמיים על התצוגה לאבחון.</string>
+    <string name="help_detect_lock_exposure">בפאנל נעילות: נועל חשיפה ואיזון לבן כדי שהתאורה תישאר יציבה בזמן כיוון.</string>
+    <string name="help_detect_lock_focus">בפאנל נעילות: מבצע מיקוד חד־פעמי ושומר אותו.</string>
+    <string name="help_detect_calibrate">בפאנל פעולות: מכייל מחדש את קו הבסיס הסביבתי. יש להרחיק את הקרן מהתמונה בזמן הכיול.</string>
+    <string name="help_detect_pocket">בפאנל פעולות: עמעום מסך והסתרת סרגלי מערכת לשימוש דיסקרטי. לחיצה ארוכה לביטול הנעילה.</string>
+    <string name="help_detect_debug">בפאנל מתקדם: מציג מדדי זיהוי גולמיים על התצוגה לאבחון.</string>
     <string name="help_detect_settings">גלגל שיניים בסרגל העליון של מסך הזיהוי פותח הגדרות בלי לחזור לתפריט.</string>
     <string name="help_section_settings">הגדרות</string>
-    <string name="help_setting_roi_width">שמור להגבלת אזור זיהוי בעתיד. כרגע הזיהוי סורק את כל הפריים.</string>
     <string name="help_setting_beep_style">סגנון הצליל כשמזוהה קרן.</string>
     <string name="help_setting_audio_stream">ערוץ התראה (יכול לנגן גם במצב שקט במכשירים רבים) או ערוץ מדיה. עוצמה דרך מקשי הווליום במכשיר.</string>
     <string name="help_setting_vibrate">רטט מסונכרן עם הצפצופים. כבוי כברירת מחדל בהתקנה חדשה.</string>

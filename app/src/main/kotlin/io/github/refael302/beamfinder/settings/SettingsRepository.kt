@@ -34,7 +34,6 @@ class SettingsRepository(context: Context) {
         val vibrate = booleanPreferencesKey("vibrate")
         val volume = floatPreferencesKey("volume")
         val audioStream = stringPreferencesKey("audio_stream")
-        val roiWidth = floatPreferencesKey("roi_width")
         val lowExposure = booleanPreferencesKey("low_exposure")
         val guideLineY = floatPreferencesKey("guide_line_y")
         val guideLocked = booleanPreferencesKey("guide_locked")
@@ -51,7 +50,6 @@ class SettingsRepository(context: Context) {
             vibrate = this[Keys.vibrate] ?: d.vibrate,
             volume = this[Keys.volume] ?: d.volume,
             audioStream = enumOf(this[Keys.audioStream], d.audioStream),
-            roiWidth = this[Keys.roiWidth] ?: d.roiWidth,
             lowExposure = this[Keys.lowExposure] ?: d.lowExposure,
             guideLineY = this[Keys.guideLineY] ?: d.guideLineY,
             guideLocked = this[Keys.guideLocked] ?: d.guideLocked,
@@ -67,7 +65,6 @@ class SettingsRepository(context: Context) {
         this[Keys.vibrate] = s.vibrate
         this[Keys.volume] = s.volume
         this[Keys.audioStream] = s.audioStream.name
-        this[Keys.roiWidth] = s.roiWidth
         this[Keys.lowExposure] = s.lowExposure
         this[Keys.guideLineY] = s.guideLineY
         this[Keys.guideLocked] = s.guideLocked

@@ -3,7 +3,6 @@ package io.github.refael302.beamfinder.ui.detect
 import androidx.activity.compose.LocalActivity
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.background
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,11 +12,20 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BugReport
+import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.CenterFocusStrong
+import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.RestartAlt
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material.icons.filled.WbSunny
+import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -41,11 +49,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -344,6 +354,7 @@ private fun DebugInfo(d: DetectionResult, thresholds: SensitivityModel.Threshold
 @Composable
 private fun Controls(viewModel: DetectViewModel, session: DetectSessionState) {
     val settings by viewModel.settings.collectAsStateWithLifecycle()
+    val locksActive = session.aeAwbLock || session.focusLock
 
     Column(
         Modifier
@@ -351,43 +362,85 @@ private fun Controls(viewModel: DetectViewModel, session: DetectSessionState) {
             .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
-        if (session.showSensitivity) {
-            SensitivityControls(
+        when (session.openPanel) {
+            DetectControlPanel.Sensitivity -> SensitivityControls(
                 sensitivity = settings.sensitivity,
                 auto = session.sensitivityAuto,
                 onSensitivityCommit = viewModel::setSensitivityManual,
                 onToggleAuto = viewModel::toggleSensitivityAuto,
             )
+            DetectControlPanel.Locks -> LocksControls(
+                aeAwbLock = session.aeAwbLock,
+                focusLock = session.focusLock,
+                onToggleAeAwb = viewModel::toggleAeAwbLock,
+                onToggleFocus = viewModel::toggleFocusLock,
+            )
+            DetectControlPanel.Actions -> ActionsControls(
+                onCalibrate = viewModel::recalibrate,
+                onPocket = { viewModel.setPocket(true) },
+            )
+            DetectControlPanel.Advanced -> AdvancedControls(
+                showDebug = session.showDebug,
+                onToggleDebug = viewModel::toggleDebug,
+            )
+            null -> Unit
         }
         Row(
-            Modifier.horizontalScroll(rememberScrollState()),
+            Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            FilterChip(
-                selected = session.showSensitivity,
-                onClick = viewModel::toggleSensitivityPanel,
-                label = { Text(stringResource(R.string.setting_sensitivity)) },
+            TopicChip(
+                selected = session.openPanel == DetectControlPanel.Sensitivity,
+                onClick = { viewModel.toggleControlPanel(DetectControlPanel.Sensitivity) },
+                icon = Icons.Filled.Tune,
+                label = stringResource(R.string.setting_sensitivity),
+                modifier = Modifier.weight(1f),
             )
-            FilterChip(
-                selected = session.aeAwbLock,
-                onClick = viewModel::toggleAeAwbLock,
-                label = { Text(stringResource(R.string.detect_lock_exposure)) },
+            TopicChip(
+                selected = session.openPanel == DetectControlPanel.Locks,
+                onClick = { viewModel.toggleControlPanel(DetectControlPanel.Locks) },
+                icon = if (locksActive) Icons.Filled.Lock else Icons.Outlined.Lock,
+                label = stringResource(R.string.detect_panel_locks),
+                modifier = Modifier.weight(1f),
             )
-            FilterChip(
-                selected = session.focusLock,
-                onClick = viewModel::toggleFocusLock,
-                label = { Text(stringResource(R.string.detect_lock_focus)) },
+            TopicChip(
+                selected = session.openPanel == DetectControlPanel.Actions,
+                onClick = { viewModel.toggleControlPanel(DetectControlPanel.Actions) },
+                icon = Icons.Filled.Build,
+                label = stringResource(R.string.detect_panel_actions),
+                modifier = Modifier.weight(1f),
             )
-            OutlinedButton(onClick = viewModel::recalibrate) { Text(stringResource(R.string.detect_calibrate)) }
-            OutlinedButton(onClick = { viewModel.setPocket(true) }) { Text(stringResource(R.string.detect_pocket)) }
-            FilterChip(
-                selected = session.showDebug,
-                onClick = viewModel::toggleDebug,
-                label = { Text(stringResource(R.string.detect_debug)) },
+            TopicChip(
+                selected = session.openPanel == DetectControlPanel.Advanced,
+                onClick = { viewModel.toggleControlPanel(DetectControlPanel.Advanced) },
+                icon = Icons.Filled.BugReport,
+                label = stringResource(R.string.detect_panel_advanced),
+                modifier = Modifier.weight(1f),
             )
         }
     }
+}
+
+@Composable
+private fun TopicChip(
+    selected: Boolean,
+    onClick: () -> Unit,
+    icon: ImageVector,
+    label: String,
+    modifier: Modifier = Modifier,
+) {
+    FilterChip(
+        selected = selected,
+        onClick = onClick,
+        modifier = modifier.fillMaxWidth(),
+        leadingIcon = {
+            Icon(icon, contentDescription = null, modifier = Modifier.size(18.dp))
+        },
+        label = {
+            Text(label, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        },
+    )
 }
 
 /** Sensitivity slider + Auto chip; local drag state commits when the finger lifts. */
@@ -421,6 +474,115 @@ private fun SensitivityControls(
             selected = auto,
             onClick = onToggleAuto,
             label = { Text(stringResource(R.string.detect_sensitivity_auto)) },
+        )
+    }
+}
+
+@Composable
+private fun LocksControls(
+    aeAwbLock: Boolean,
+    focusLock: Boolean,
+    onToggleAeAwb: () -> Unit,
+    onToggleFocus: () -> Unit,
+) {
+    Row(
+        Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        FilterChip(
+            selected = aeAwbLock,
+            onClick = onToggleAeAwb,
+            modifier = Modifier.weight(1f).fillMaxWidth(),
+            leadingIcon = {
+                Icon(Icons.Filled.WbSunny, contentDescription = null, modifier = Modifier.size(18.dp))
+            },
+            label = {
+                Text(
+                    stringResource(R.string.detect_lock_exposure),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            },
+        )
+        FilterChip(
+            selected = focusLock,
+            onClick = onToggleFocus,
+            modifier = Modifier.weight(1f).fillMaxWidth(),
+            leadingIcon = {
+                Icon(
+                    Icons.Filled.CenterFocusStrong,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp),
+                )
+            },
+            label = {
+                Text(
+                    stringResource(R.string.detect_lock_focus),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            },
+        )
+    }
+}
+
+@Composable
+private fun ActionsControls(
+    onCalibrate: () -> Unit,
+    onPocket: () -> Unit,
+) {
+    Row(
+        Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        OutlinedButton(onClick = onCalibrate, modifier = Modifier.weight(1f)) {
+            Icon(
+                Icons.Filled.RestartAlt,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp),
+            )
+            Text(
+                stringResource(R.string.detect_calibrate),
+                modifier = Modifier.padding(start = 8.dp),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+        OutlinedButton(onClick = onPocket, modifier = Modifier.weight(1f)) {
+            Icon(
+                Icons.Filled.DarkMode,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp),
+            )
+            Text(
+                stringResource(R.string.detect_pocket),
+                modifier = Modifier.padding(start = 8.dp),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+    }
+}
+
+@Composable
+private fun AdvancedControls(
+    showDebug: Boolean,
+    onToggleDebug: () -> Unit,
+) {
+    Row(
+        Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        FilterChip(
+            selected = showDebug,
+            onClick = onToggleDebug,
+            leadingIcon = {
+                Icon(Icons.Filled.BugReport, contentDescription = null, modifier = Modifier.size(18.dp))
+            },
+            label = { Text(stringResource(R.string.detect_debug)) },
         )
     }
 }

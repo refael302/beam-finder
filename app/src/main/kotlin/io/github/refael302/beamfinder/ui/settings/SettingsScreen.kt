@@ -14,14 +14,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -30,12 +26,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.refael302.beamfinder.R
 import io.github.refael302.beamfinder.settings.AppLanguage
-import io.github.refael302.beamfinder.settings.AppSettings
 import io.github.refael302.beamfinder.settings.AudioStream
 import io.github.refael302.beamfinder.settings.BeepStyle
 import io.github.refael302.beamfinder.ui.AppViewModelProvider
 import io.github.refael302.beamfinder.ui.components.BeamTopBar
-import kotlin.math.roundToInt
 
 @Composable
 fun SettingsScreen(
@@ -80,13 +74,6 @@ fun SettingsScreen(
                 checked = s.lowExposure,
                 onChange = { v -> viewModel.update { it.copy(lowExposure = v) } },
             )
-            SliderRow(
-                title = stringResource(R.string.setting_roi_width),
-                value = s.roiWidth,
-                range = AppSettings.ROI_WIDTH_RANGE,
-                valueText = percent(s.roiWidth),
-                onCommit = { v -> viewModel.update { it.copy(roiWidth = v) } },
-            )
 
             SectionHeader(R.string.settings_section_general)
             ChoiceRow(
@@ -99,8 +86,6 @@ fun SettingsScreen(
         }
     }
 }
-
-private fun percent(v: Float) = "${(v * 100).roundToInt()}%"
 
 @Composable
 private fun SectionHeader(titleRes: Int) {
@@ -125,32 +110,6 @@ private fun SwitchRow(title: String, checked: Boolean, onChange: (Boolean) -> Un
     ) {
         Text(title, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
         Switch(checked = checked, onCheckedChange = onChange)
-    }
-}
-
-/** Keeps drag state locally and commits to DataStore only when the drag ends. */
-@Composable
-private fun SliderRow(
-    title: String,
-    value: Float,
-    range: ClosedFloatingPointRange<Float>,
-    valueText: String,
-    onCommit: (Float) -> Unit,
-    steps: Int = 0,
-) {
-    var local by remember(value) { mutableFloatStateOf(value) }
-    Column(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(title, style = MaterialTheme.typography.bodyLarge)
-            Text(valueText, style = MaterialTheme.typography.bodyMedium)
-        }
-        Slider(
-            value = local,
-            onValueChange = { local = it },
-            onValueChangeFinished = { onCommit(local) },
-            valueRange = range,
-            steps = steps,
-        )
     }
 }
 

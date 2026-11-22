@@ -60,7 +60,6 @@ fun HelpScreen(onBack: () -> Unit) {
             HelpItem(R.string.setting_audio_stream, R.string.help_setting_audio_stream)
             HelpItem(R.string.setting_vibrate, R.string.help_setting_vibrate)
             HelpItem(R.string.setting_low_exposure, R.string.help_setting_low_exposure)
-            HelpItem(R.string.setting_roi_width, R.string.help_setting_roi_width)
             HelpItem(R.string.setting_language, R.string.help_setting_language)
         }
     }

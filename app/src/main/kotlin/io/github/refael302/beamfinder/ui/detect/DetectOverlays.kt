@@ -30,6 +30,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -37,6 +38,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -116,6 +118,9 @@ fun Modifier.pinchToZoom(onZoom: (Float) -> Unit): Modifier = pointerInput(Unit)
  * Full-width guide line marking the lens/height reference. VISUAL ONLY: detection scans the
  * whole frame. Drag the line vertically to move it (unless locked); the lock button sits at the
  * line's end. Draw this in an LTR subtree.
+ *
+ * The line may sit at y=0 (front camera at the top). The drag hit-box is clamped below the
+ * status-bar inset so a downward drag does not open the system shade.
  */
 @Composable
 fun GuideOverlay(
@@ -132,6 +137,11 @@ fun GuideOverlay(
         val density = LocalDensity.current
         val touchPx = with(density) { TOUCH_HEIGHT.toPx() }
         val buttonPx = with(density) { LOCK_BUTTON.toPx() }
+        val systemBars = WindowInsets.systemBars
+        // Extra pad past the inset: shade can still steal touches right at the status-bar edge.
+        val edgePadPx = with(density) { GUIDE_EDGE_PAD.toPx() }
+        val topSafe = systemBars.getTop(density).toFloat() + edgePadPx
+        val bottomSafe = systemBars.getBottom(density).toFloat() + edgePadPx
 
         Canvas(Modifier.fillMaxSize()) {
             val y = guideY * size.height
@@ -151,9 +161,11 @@ fun GuideOverlay(
             dragY = (dragY + delta / heightPx).coerceIn(0f, 1f)
             onDrag(dragY)
         }
+        // Keep the visual line free to 0..1; only the touch strip stays out of system-bar zones.
+        val touchTop = guideTouchTop(guideY * heightPx, heightPx, touchPx, topSafe, bottomSafe)
         Box(
             Modifier
-                .offset { IntOffset(0, (guideY * heightPx - touchPx / 2f).roundToInt()) }
+                .offset { IntOffset(0, touchTop.roundToInt()) }
                 .fillMaxWidth()
                 .height(TOUCH_HEIGHT)
                 .draggable(
@@ -176,7 +188,10 @@ fun GuideOverlay(
             modifier = Modifier
                 .align(Alignment.TopEnd)
                 .offset {
-                    val y = (guideY * heightPx - buttonPx / 2f).coerceIn(0f, (heightPx - buttonPx).coerceAtLeast(0f))
+                    val y = (guideY * heightPx - buttonPx / 2f).coerceIn(
+                        topSafe,
+                        (heightPx - bottomSafe - buttonPx).coerceAtLeast(topSafe),
+                    )
                     IntOffset(0, y.roundToInt())
                 }
                 .padding(end = 8.dp)
@@ -186,6 +201,21 @@ fun GuideOverlay(
             Icon(if (locked) Icons.Filled.Lock else Icons.Outlined.Lock, contentDescription = null)
         }
     }
+}
+
+/**
+ * Preferred hit-box top for a guide at [guideYPx]: centered on the line when possible, otherwise
+ * shifted so the strip stays inside the safe band between [topSafe] and [heightPx] - [bottomSafe].
+ */
+private fun guideTouchTop(
+    guideYPx: Float,
+    heightPx: Float,
+    touchPx: Float,
+    topSafe: Float,
+    bottomSafe: Float,
+): Float {
+    val maxTop = (heightPx - bottomSafe - touchPx).coerceAtLeast(topSafe)
+    return (guideYPx - touchPx / 2f).coerceIn(topSafe, maxTop)
 }
 
 /**
@@ -400,6 +430,8 @@ fun CameraPermissionGate(
 
 private val TOUCH_HEIGHT = 48.dp
 private val LOCK_BUTTON = 40.dp
+/** Keeps the drag strip clear of the system shade / nav-gesture edge. */
+private val GUIDE_EDGE_PAD = 8.dp
 private const val UNLOCK_HOLD_MS = 1_200L
 /** Near-minimum; exactly 0 turns the backlight fully off on some devices. */
 private const val POCKET_BRIGHTNESS = 0.01f

@@ -25,11 +25,6 @@ data class AppSettings(
      */
     val volume: Float = 1f,
     val audioStream: AudioStream = AudioStream.Alarm,
-    /**
-     * Detection area width, 0.1..1. Currently UNUSED by detection (the full frame is scanned and
-     * the guide line is visual only); kept for settings compatibility / future max-spot-size use.
-     */
-    val roiWidth: Float = 0.4f,
     val lowExposure: Boolean = true,
     /** Guide line vertical position, 0..1 of frame height */
     val guideLineY: Float = 0.5f,
@@ -39,13 +34,11 @@ data class AppSettings(
     fun sanitized(): AppSettings = copy(
         sensitivity = sensitivity.coerceIn(SENSITIVITY_RANGE),
         volume = volume.coerceIn(0f, 1f),
-        roiWidth = roiWidth.coerceIn(ROI_WIDTH_RANGE),
         guideLineY = guideLineY.coerceIn(0f, 1f),
     )
 
     companion object {
         val Default = AppSettings()
         val SENSITIVITY_RANGE = 0..100
-        val ROI_WIDTH_RANGE = 0.1f..1f
     }
 }

@@ -26,6 +26,14 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlin.math.ln
 
+/** Which bottom control panel is expanded on Detect (one at a time). */
+enum class DetectControlPanel {
+    Sensitivity,
+    Locks,
+    Actions,
+    Advanced,
+}
+
 /** Session-only Detect UI state (not persisted). */
 data class DetectSessionState(
     val linearZoom: Float = 0f,
@@ -33,8 +41,8 @@ data class DetectSessionState(
     val focusLock: Boolean = false,
     val pocketActive: Boolean = false,
     val showDebug: Boolean = false,
-    /** Expands the sensitivity slider + Auto control on the Detect screen. */
-    val showSensitivity: Boolean = false,
+    /** Expanded bottom control topic; null when all panels are collapsed. */
+    val openPanel: DetectControlPanel? = null,
     /** When true, sensitivity tracks the strongest dazzle in the current auto session. */
     val sensitivityAuto: Boolean = false,
     /** Guide Y while the user is dragging (persisted on release); null when idle. */
@@ -68,7 +76,7 @@ class DetectViewModel(
     init {
         viewModelScope.launch {
             settings.collect { s ->
-                // Guide line / roiWidth are visual only; detection scans the full frame.
+                // Guide line is visual only; detection scans the full frame.
                 analyzer.hue = s.beamColor.toHue()
                 pipeline.thresholds = SensitivityModel.thresholds(s.sensitivity)
                 beepEngine.configure(s)
@@ -135,7 +143,10 @@ class DetectViewModel(
 
     fun toggleDebug() = _session.update { it.copy(showDebug = !it.showDebug) }
 
-    fun toggleSensitivityPanel() = _session.update { it.copy(showSensitivity = !it.showSensitivity) }
+    /** Opens [panel], or closes it if it is already open (only one panel at a time). */
+    fun toggleControlPanel(panel: DetectControlPanel) = _session.update {
+        it.copy(openPanel = if (it.openPanel == panel) null else panel)
+    }
 
     fun toggleSensitivityAuto() {
         _session.update { current ->
