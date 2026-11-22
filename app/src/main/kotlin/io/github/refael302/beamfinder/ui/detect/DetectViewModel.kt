@@ -64,7 +64,6 @@ class DetectViewModel(
         .stateIn(viewModelScope, SharingStarted.Eagerly, SensitivityModel.thresholds(AppSettings.Default.sensitivity))
 
     private var active = false
-    private var autoPocketPending = false
 
     init {
         viewModelScope.launch {
@@ -81,14 +80,9 @@ class DetectViewModel(
                 .distinctUntilChanged()
                 .collect { pipeline.recalibrate() }
         }
-        // Auto-enter pocket mode once the first calibration finishes, if enabled in settings.
-        // Also feed auto-sensitivity when that mode is on.
+        // Feed auto-sensitivity when that mode is on.
         viewModelScope.launch {
             detection.collect { r ->
-                if (autoPocketPending && !r.calibrating && r.fps > 0f) {
-                    autoPocketPending = false
-                    if (settings.value.pocketMode) _session.update { it.copy(pocketActive = true) }
-                }
                 if (_session.value.sensitivityAuto && !r.calibrating) {
                     val next = autoSensitivity.onSample(r.intensity, SystemClock.elapsedRealtime())
                     if (next != null && next != settings.value.sensitivity) {
@@ -111,7 +105,6 @@ class DetectViewModel(
     fun onActive() {
         if (active) return
         active = true
-        autoPocketPending = true
         pipeline.recalibrate()
         beepEngine.start(viewModelScope)
     }

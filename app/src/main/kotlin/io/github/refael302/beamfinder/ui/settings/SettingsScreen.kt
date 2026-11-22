@@ -32,9 +32,7 @@ import io.github.refael302.beamfinder.R
 import io.github.refael302.beamfinder.settings.AppLanguage
 import io.github.refael302.beamfinder.settings.AppSettings
 import io.github.refael302.beamfinder.settings.AudioStream
-import io.github.refael302.beamfinder.settings.BeamColor
 import io.github.refael302.beamfinder.settings.BeepStyle
-import io.github.refael302.beamfinder.settings.CameraFacing
 import io.github.refael302.beamfinder.ui.AppViewModelProvider
 import io.github.refael302.beamfinder.ui.components.BeamTopBar
 import kotlin.math.roundToInt
@@ -55,30 +53,6 @@ fun SettingsScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 16.dp),
         ) {
-            SectionHeader(R.string.settings_section_detection)
-            ChoiceRow(
-                title = stringResource(R.string.setting_beam_color),
-                options = BeamColor.entries,
-                selected = s.beamColor,
-                label = { stringResource(it.labelRes()) },
-                onSelect = { v -> viewModel.update { it.copy(beamColor = v) } },
-            )
-            SliderRow(
-                title = stringResource(R.string.setting_sensitivity),
-                value = s.sensitivity.toFloat(),
-                range = 0f..100f,
-                steps = 99,
-                valueText = s.sensitivity.toString(),
-                onCommit = { v -> viewModel.update { it.copy(sensitivity = v.roundToInt()) } },
-            )
-            SliderRow(
-                title = stringResource(R.string.setting_roi_width),
-                value = s.roiWidth,
-                range = AppSettings.ROI_WIDTH_RANGE,
-                valueText = percent(s.roiWidth),
-                onCommit = { v -> viewModel.update { it.copy(roiWidth = v) } },
-            )
-
             SectionHeader(R.string.settings_section_feedback)
             ChoiceRow(
                 title = stringResource(R.string.setting_beep_style),
@@ -94,48 +68,24 @@ fun SettingsScreen(
                 label = { stringResource(it.labelRes()) },
                 onSelect = { v -> viewModel.update { it.copy(audioStream = v) } },
             )
-            SliderRow(
-                title = stringResource(R.string.setting_volume),
-                value = s.volume,
-                range = 0f..1f,
-                valueText = percent(s.volume),
-                onCommit = { v -> viewModel.update { it.copy(volume = v) } },
-            )
             SwitchRow(
                 title = stringResource(R.string.setting_vibrate),
                 checked = s.vibrate,
                 onChange = { v -> viewModel.update { it.copy(vibrate = v) } },
             )
-            SwitchRow(
-                title = stringResource(R.string.setting_pocket_mode),
-                checked = s.pocketMode,
-                onChange = { v -> viewModel.update { it.copy(pocketMode = v) } },
-            )
 
             SectionHeader(R.string.settings_section_camera)
-            ChoiceRow(
-                title = stringResource(R.string.setting_camera_facing),
-                options = CameraFacing.entries,
-                selected = s.cameraFacing,
-                label = { stringResource(it.labelRes()) },
-                onSelect = { v -> viewModel.update { it.copy(cameraFacing = v) } },
-            )
             SwitchRow(
                 title = stringResource(R.string.setting_low_exposure),
                 checked = s.lowExposure,
                 onChange = { v -> viewModel.update { it.copy(lowExposure = v) } },
             )
             SliderRow(
-                title = stringResource(R.string.setting_guide_line_y),
-                value = s.guideLineY,
-                range = 0f..1f,
-                valueText = percent(s.guideLineY),
-                onCommit = { v -> viewModel.update { it.copy(guideLineY = v) } },
-            )
-            SwitchRow(
-                title = stringResource(R.string.setting_guide_locked),
-                checked = s.guideLocked,
-                onChange = { v -> viewModel.update { it.copy(guideLocked = v) } },
+                title = stringResource(R.string.setting_roi_width),
+                value = s.roiWidth,
+                range = AppSettings.ROI_WIDTH_RANGE,
+                valueText = percent(s.roiWidth),
+                onCommit = { v -> viewModel.update { it.copy(roiWidth = v) } },
             )
 
             SectionHeader(R.string.settings_section_general)

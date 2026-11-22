@@ -36,22 +36,15 @@
 
     <!-- Settings -->
     <string name="settings_title">Settings</string>
-    <string name="settings_section_detection">Detection</string>
     <string name="settings_section_feedback">Feedback</string>
     <string name="settings_section_camera">Camera</string>
     <string name="settings_section_general">General</string>
-    <string name="setting_beam_color">Beam color</string>
     <string name="setting_sensitivity">Sensitivity</string>
     <string name="setting_beep_style">Beep style</string>
-    <string name="setting_camera_facing">Camera</string>
-    <string name="setting_pocket_mode">Dim screen</string>
     <string name="setting_vibrate">Vibrate</string>
-    <string name="setting_volume">Volume</string>
     <string name="setting_audio_stream">Audio stream</string>
     <string name="setting_roi_width">Detection area width</string>
     <string name="setting_low_exposure">Low exposure</string>
-    <string name="setting_guide_line_y">Guide line position</string>
-    <string name="setting_guide_locked">Lock guide line</string>
     <string name="setting_language">Language</string>
 
     <string name="color_red">Red</string>
@@ -96,7 +89,7 @@
     <string name="help_intro">Short guide to each screen and control.</string>
     <string name="help_section_menu">Menu</string>
     <string name="help_menu_start">Opens the detection screen and starts the camera.</string>
-    <string name="help_menu_settings">Opens app settings (detection, feedback, camera, language).</string>
+    <string name="help_menu_settings">Opens general settings (feedback, camera options, language). Also available from the gear on Detect.</string>
     <string name="help_menu_about">Shows version, developer contact, disclaimer, help, and updates.</string>
     <string name="help_section_detect">Detect</string>
     <string name="help_detect_preview_title">Camera preview</string>
@@ -114,18 +107,12 @@
     <string name="help_detect_calibrate">Recalibrates ambient baseline. Keep the beam out of view while calibrating.</string>
     <string name="help_detect_pocket">Dims the screen and hides system bars for discreet use (Detect screen button). Long-press to unlock.</string>
     <string name="help_detect_debug">Shows raw detection metrics on the preview for diagnostics.</string>
+    <string name="help_detect_settings">Gear in the Detect top bar opens Settings without returning to the menu.</string>
     <string name="help_section_settings">Settings</string>
-    <string name="help_setting_beam_color">Which laser color the detector looks for.</string>
-    <string name="help_setting_sensitivity">Default detection sensitivity (also adjustable on the Detect screen).</string>
     <string name="help_setting_roi_width">Reserved for future detection-area limits. Detection currently scans the full frame.</string>
     <string name="help_setting_beep_style">Sound style used when a beam is detected.</string>
-    <string name="help_setting_audio_stream">Alarm stream (can play over silent mode on many devices) or media stream.</string>
-    <string name="help_setting_volume">Beep volume.</string>
-    <string name="help_setting_vibrate">Vibrate in sync with beeps.</string>
-    <string name="help_setting_pocket_mode">If enabled, Detect dims the screen automatically after the first calibration.</string>
-    <string name="help_setting_camera_facing">Default camera when Detect opens.</string>
+    <string name="help_setting_audio_stream">Alarm stream (can play over silent mode on many devices) or media stream. Use the device volume keys for loudness.</string>
+    <string name="help_setting_vibrate">Vibrate in sync with beeps. Off by default on a fresh install.</string>
     <string name="help_setting_low_exposure">Biases the camera toward lower exposure to reduce bloom from bright beams.</string>
-    <string name="help_setting_guide_line_y">Default vertical position of the guide line.</string>
-    <string name="help_setting_guide_locked">Keeps the guide line from being dragged on Detect.</string>
     <string name="help_setting_language">App language: system default, Hebrew, or English.</string>
 </resources>

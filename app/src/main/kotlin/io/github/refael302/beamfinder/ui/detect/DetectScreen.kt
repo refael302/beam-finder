@@ -16,7 +16,11 @@ import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -67,6 +71,7 @@ import kotlin.math.roundToInt
 @Composable
 fun DetectScreen(
     onBack: () -> Unit,
+    onSettings: () -> Unit,
     viewModel: DetectViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val session by viewModel.session.collectAsStateWithLifecycle()
@@ -76,7 +81,19 @@ fun DetectScreen(
     Box(Modifier.fillMaxSize()) {
         Scaffold(
             topBar = {
-                BeamTopBar(stringResource(R.string.detect_title), onBack, overlay = true)
+                BeamTopBar(
+                    title = stringResource(R.string.detect_title),
+                    onBack = onBack,
+                    overlay = true,
+                    actions = {
+                        IconButton(onClick = onSettings) {
+                            Icon(
+                                Icons.Filled.Settings,
+                                contentDescription = stringResource(R.string.menu_settings),
+                            )
+                        }
+                    },
+                )
             },
             containerColor = Color.Black,
         ) { padding ->
