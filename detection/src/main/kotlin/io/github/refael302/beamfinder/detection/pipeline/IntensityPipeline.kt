@@ -4,12 +4,15 @@ import io.github.refael302.beamfinder.detection.calibration.AmbientCalibrator
 import io.github.refael302.beamfinder.detection.calibration.Calibrator
 import io.github.refael302.beamfinder.detection.frame.LumaChromaFrame
 import io.github.refael302.beamfinder.detection.scoring.BeamHue
+import io.github.refael302.beamfinder.detection.scoring.ColorLaserScorer
 import io.github.refael302.beamfinder.detection.scoring.FlashDetector
 import io.github.refael302.beamfinder.detection.scoring.LaserScorer
 import io.github.refael302.beamfinder.detection.scoring.Roi
 import io.github.refael302.beamfinder.detection.scoring.ScoreBreakdown
+import io.github.refael302.beamfinder.detection.scoring.ScorerParams
 import io.github.refael302.beamfinder.detection.sensitivity.SensitivityModel
 import kotlin.math.exp
+import kotlin.math.max
 
 /** Output of one analyzed frame. */
 data class DetectionResult(
@@ -48,12 +51,21 @@ data class PipelineParams(
     val hysteresis: Float = 0.05f,
     /** Time constant for the fps estimate. */
     val fpsTauMs: Float = 500f,
+    /**
+     * Secondary dense-crop refine: run when wide raw score is in this band (weak-but-interesting).
+     * Below [refineMinRaw] = noise; above [refineMaxRaw] = already strong enough.
+     */
+    val refineMinRaw: Float = 0.04f,
+    val refineMaxRaw: Float = 0.50f,
+    /** Require at least this flash (or peak) on the wide pass before refining. */
+    val refineMinFlash: Float = 0.04f,
+    val refineMinPeak: Float = 0.12f,
 )
 
 /**
  * Frame -> intensity (0..1) pipeline:
- * full-frame flash score ([FlashDetector]) -> ambient calibration -> normalize vs baseline ->
- * peak-hold -> EMA -> hysteresis. Sensitivity enters via [thresholds].
+ * full-frame flash score ([FlashDetector]) -> optional dense crop refine -> ambient calibration ->
+ * normalize vs baseline -> peak-hold -> EMA -> hysteresis. Sensitivity enters via [thresholds].
  *
  * Frame timing comes from [LumaChromaFrame.timestampNanos]. [process] must be called from a
  * single thread; [recalibrate] and [thresholds] may be set from any thread.
@@ -62,6 +74,8 @@ class IntensityPipeline(
     private val scorer: LaserScorer = FlashDetector(),
     private val calibrator: Calibrator = AmbientCalibrator(),
     private val params: PipelineParams = PipelineParams(),
+    /** Static scorer on a dense crop; separate from [scorer] temporal state. */
+    private val cropScorer: LaserScorer = ColorLaserScorer(ScorerParams(cellSize = 2)),
 ) {
     @Volatile
     var thresholds: SensitivityModel.Thresholds = SensitivityModel.thresholds(50)
@@ -76,11 +90,21 @@ class IntensityPipeline(
     private var smoothed = 0f
     private var detected = false
 
-    fun process(frame: LumaChromaFrame, hue: BeamHue, roi: Roi = Roi.Full): DetectionResult {
+    /**
+     * @param secondaryCrop optional factory for a dense crop around the wide peak; only invoked
+     * when the wide pass looks weakly interesting. Return null to skip.
+     */
+    fun process(
+        frame: LumaChromaFrame,
+        hue: BeamHue,
+        roi: Roi = Roi.Full,
+        secondaryCrop: ((peakX: Float, peakY: Float) -> LumaChromaFrame?)? = null,
+    ): DetectionResult {
         if (recalibrateRequested) {
             recalibrateRequested = false
             calibrator.reset()
             scorer.reset()
+            cropScorer.reset()
             resetSmoothing()
         }
         val nowMs = frame.timestampNanos / 1_000_000L
@@ -91,8 +115,24 @@ class IntensityPipeline(
         }
         val fps = if (frameIntervalMs > 0f) 1000f / frameIntervalMs else 0f
 
-        val breakdown = scorer.analyze(frame, roi, hue)
-        val raw = breakdown.score.coerceIn(0f, 1f)
+        val wide = scorer.analyze(frame, roi, hue)
+        var breakdown = wide
+        var raw = wide.score.coerceIn(0f, 1f)
+
+        if (secondaryCrop != null && shouldRefine(wide)) {
+            val crop = secondaryCrop(wide.peakX, wide.peakY)
+            if (crop != null) {
+                val cropBd = cropScorer.analyze(crop, Roi.Full, hue)
+                if (cropBd.score > raw) {
+                    raw = cropBd.score.coerceIn(0f, 1f)
+                    breakdown = wide.copy(
+                        score = raw,
+                        peak = max(wide.peak, cropBd.peak),
+                        flash = max(wide.flash, cropBd.flash),
+                    )
+                }
+            }
+        }
 
         if (calibrator.isCalibrating) {
             calibrator.update(raw, breakdown.meanLuma, nowMs)
@@ -144,6 +184,12 @@ class IntensityPipeline(
     }
 
     fun reset() = recalibrate()
+
+    internal fun shouldRefine(wide: ScoreBreakdown): Boolean {
+        val raw = wide.score
+        if (raw < params.refineMinRaw || raw > params.refineMaxRaw) return false
+        return wide.flash >= params.refineMinFlash || wide.peak >= params.refineMinPeak
+    }
 
     private fun normalize(raw: Float): Float {
         val cal = calibrator.result

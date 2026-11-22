@@ -15,7 +15,8 @@ import kotlinx.coroutines.flow.asStateFlow
 
 /**
  * CameraX analyzer: YUV_420_888 frame -> upright FULL frame (downsampled) -> [IntensityPipeline]
- * -> [results]. The guide line is visual only and does not restrict detection.
+ * with optional dense secondary crop around a weak wide peak -> [results].
+ * The guide line is visual only and does not restrict detection.
  * Parameters are read per frame and may be changed from any thread.
  */
 class LaserAnalyzer(
@@ -53,8 +54,19 @@ class LaserAnalyzer(
                 uvRowStride = p[1].rowStride,
                 uvPixelStride = p[1].pixelStride,
             )
-            val frame = extractor.extractFull(planes, mapper, img.imageInfo.timestamp)
-            val result = pipeline.process(frame, hue)
+            val timestamp = img.imageInfo.timestamp
+            val frame = extractor.extractFull(planes, mapper, timestamp)
+            val result = pipeline.process(frame, hue) { peakX, peakY ->
+                extractor.extractCrop(
+                    planes = planes,
+                    mapper = mapper,
+                    centerX = peakX,
+                    centerY = peakY,
+                    timestampNanos = timestamp,
+                    fraction = SECONDARY_CROP_FRACTION,
+                    maxOutputWidth = SECONDARY_CROP_WIDTH,
+                )
+            }
             _results.value = result
             onResult(result)
         }
@@ -67,9 +79,11 @@ class LaserAnalyzer(
 
     private companion object {
         /**
-         * Upright analysis width cap. The 640x480 analysis stream is 480 wide when upright, so
-         * this keeps full resolution (small far spots survive); larger streams are point-sampled.
+         * Upright analysis width cap for the wide pass. Higher-res CameraX frames are
+         * point-sampled down; secondary refine re-reads a dense crop from the full buffer.
          */
         const val MAX_ANALYSIS_WIDTH = 480
+        const val SECONDARY_CROP_FRACTION = 0.25f
+        const val SECONDARY_CROP_WIDTH = 256
     }
 }

@@ -38,12 +38,53 @@ class BandExtractor(
     fun extractFull(planes: YuvPlanes, mapper: CoordinateMapper, timestampNanos: Long): LumaChromaFrame =
         extract(planes, mapper, FULL_FRAME, timestampNanos)
 
-    fun extract(planes: YuvPlanes, mapper: CoordinateMapper, band: GuideBand, timestampNanos: Long): LumaChromaFrame {
-        val step = ((mapper.uprightWidth + maxOutputWidth - 1) / maxOutputWidth).coerceAtLeast(1)
-        val r0 = mapper.uprightRow(band.top)
-        val r1 = mapper.uprightRow(band.bottom).coerceAtLeast(r0)
-        val outW = ((mapper.uprightWidth + step - 1) / step).coerceAtLeast(1)
-        val outH = ((r1 - r0) / step + 1).coerceAtLeast(1)
+    /**
+     * Dense crop around [centerX]/[centerY] (normalized upright 0..1) for secondary refine.
+     * Samples the source region at high density into [maxOutputWidth] so a tiny laser occupies
+     * more analysis pixels — like digital zoom, without changing the preview FOV.
+     */
+    fun extractCrop(
+        planes: YuvPlanes,
+        mapper: CoordinateMapper,
+        centerX: Float,
+        centerY: Float,
+        timestampNanos: Long,
+        fraction: Float = 0.25f,
+        maxOutputWidth: Int = 256,
+    ): LumaChromaFrame {
+        val side = fraction.coerceIn(0.08f, 0.6f)
+        val cx = centerX.coerceIn(0f, 1f)
+        val cy = centerY.coerceIn(0f, 1f)
+        val half = side / 2f
+        val left = (cx - half).coerceIn(0f, 1f - side)
+        val top = (cy - half).coerceIn(0f, 1f - side)
+        val right = left + side
+        val bottom = top + side
+        return extractRegion(planes, mapper, left, top, right, bottom, timestampNanos, maxOutputWidth)
+    }
+
+    fun extract(planes: YuvPlanes, mapper: CoordinateMapper, band: GuideBand, timestampNanos: Long): LumaChromaFrame =
+        extractRegion(planes, mapper, 0f, band.top, 1f, band.bottom, timestampNanos, maxOutputWidth)
+
+    private fun extractRegion(
+        planes: YuvPlanes,
+        mapper: CoordinateMapper,
+        left: Float,
+        top: Float,
+        right: Float,
+        bottom: Float,
+        timestampNanos: Long,
+        outMaxWidth: Int,
+    ): LumaChromaFrame {
+        val x0 = (left.coerceIn(0f, 1f) * (mapper.uprightWidth - 1)).toInt()
+        val x1 = (right.coerceIn(0f, 1f) * (mapper.uprightWidth - 1)).toInt().coerceAtLeast(x0)
+        val y0 = mapper.uprightRow(top.coerceIn(0f, 1f))
+        val y1 = mapper.uprightRow(bottom.coerceIn(0f, 1f)).coerceAtLeast(y0)
+        val srcW = (x1 - x0 + 1).coerceAtLeast(1)
+        val srcH = (y1 - y0 + 1).coerceAtLeast(1)
+        val step = (srcW + outMaxWidth - 1) / outMaxWidth.coerceAtLeast(1)
+        val outW = ((srcW + step - 1) / step).coerceAtLeast(1)
+        val outH = ((srcH + step - 1) / step).coerceAtLeast(1)
         val n = outW * outH
         if (lumaBuf.size != n) {
             lumaBuf = ByteArray(n)
@@ -55,9 +96,9 @@ class BandExtractor(
         val maxBy = planes.height - 1
         var i = 0
         for (oy in 0 until outH) {
-            val yu = (r0 + oy * step).coerceAtMost(mapper.uprightHeight - 1)
+            val yu = (y0 + oy * step).coerceAtMost(mapper.uprightHeight - 1)
             for (ox in 0 until outW) {
-                val xu = (ox * step).coerceAtMost(mapper.uprightWidth - 1)
+                val xu = (x0 + ox * step).coerceAtMost(mapper.uprightWidth - 1)
                 val bx = mapper.bufferX(xu, yu).coerceIn(0, maxBx)
                 val by = mapper.bufferY(xu, yu).coerceIn(0, maxBy)
                 lumaBuf[i] = planes.y.get(by * planes.yRowStride + bx * planes.yPixelStride)

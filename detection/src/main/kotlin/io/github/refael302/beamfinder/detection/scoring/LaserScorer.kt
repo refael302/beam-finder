@@ -27,6 +27,9 @@ data class ScoreBreakdown(
     val coverage: Float,
     /** Mean luma of the analysed area (0..255). */
     val meanLuma: Float,
+    /** Peak cell centre in normalized frame coordinates (0..1); used for secondary crop refine. */
+    val peakX: Float = 0.5f,
+    val peakY: Float = 0.5f,
 ) {
     companion object {
         val Zero = ScoreBreakdown(0f, 0f, 0f, 0f, 0f)
