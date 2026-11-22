@@ -286,7 +286,7 @@ fun LevelMeter(
 }
 
 /**
- * Pocket mode: opaque black overlay, minimum screen brightness, hidden system bars, back
+ * Dim-screen mode: opaque black overlay, minimum screen brightness, hidden system bars, back
  * blocked. Long-press ([UNLOCK_HOLD_MS]) to unlock. The camera keeps running underneath.
  */
 @Composable
