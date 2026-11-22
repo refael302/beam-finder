@@ -47,9 +47,8 @@ jobs:
           body: |
             Beam Finder ${{ steps.apk.outputs.version }}
 
-            - Dim screen (rename) + vertical zoom slider on Detect
-            - Settings trimmed to general options; gear shortcut from Detect
-            - Vibrate off by default on fresh install; device volume keys for loudness
+            - Secondary dense-crop refine for weak/far beams (wide FOV kept)
+            - About update UX + stable GitHub APK signing
 
             If you are on an earlier build: About → Check for update.
         env:
