@@ -12,6 +12,11 @@ data class Rgb(val r: Int, val g: Int, val b: Int) {
         val Wall = Rgb(215, 215, 210)
         val RedLaser = Rgb(235, 25, 25)
         val GreenLaser = Rgb(25, 235, 40)
+        /**
+         * Phone-captured green laser (indoor bloom): high B → teal-ish, as measured from field video.
+         * Must pass Green mode; pure [Cyan] must not.
+         */
+        val PhoneGreenLaser = Rgb(12, 255, 198)
         val DullRed = Rgb(80, 50, 45)
         /** Orange/amber flash: R and G both high. Must not trigger Red mode. */
         val Orange = Rgb(255, 140, 30)

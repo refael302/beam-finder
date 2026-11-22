@@ -97,6 +97,8 @@ class FlashDetectorTest {
             f.repeat(10) { frame() }
         }
         assertTrue(f.frame(Spot(Rgb.GreenLaser, 80, 30)).score > 0.9f)
+        f.repeat(10) { frame() }
+        assertTrue(f.frame(Spot(Rgb.PhoneGreenLaser, 80, 30)).score > 0.65f, "phone teal-green laser")
     }
 
     @Test

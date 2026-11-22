@@ -58,6 +58,23 @@ class ColorLaserScorerTest {
     }
 
     @Test
+    fun phoneTealGreenLaserPassesGreenMode() {
+        // Real phone sensors push green lasers toward teal (high B). Field sample ~ (12,255,198).
+        val s = spotScore(Rgb.PhoneGreenLaser, BeamHue.Green)
+        assertTrue(s > 0.65f, "phone green laser must pass: score=$s")
+        assertEquals(0f, spotScore(Rgb.PhoneGreenLaser, BeamHue.Red))
+    }
+
+    @Test
+    fun clippedWhiteCoreWithGreenHaloStillScores() {
+        val frame = SyntheticFrames.spots(
+            Spot(Rgb.PhoneGreenLaser, 80, 30, radius = 5),
+            Spot(Rgb.White, 80, 30, radius = 2),
+        )
+        assertTrue(scorer.score(frame, Roi.Full, BeamHue.Green) > 0.5f)
+    }
+
+    @Test
     fun whiteAndDullRedScoreZero() {
         assertEquals(0f, scorer.score(SyntheticFrames.uniform(Rgb.Wall), Roi.Full, BeamHue.Red))
         assertEquals(0f, scorer.score(SyntheticFrames.uniform(Rgb.White), Roi.Full, BeamHue.Red))

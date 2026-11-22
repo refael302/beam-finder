@@ -7,6 +7,9 @@ import io.github.refael302.beamfinder.detection.frame.LumaChromaFrame
  * cells of [ScorerParams.cellSize] px and each cell holds the MAX hue-gate strength of its
  * pixels (max-pooling keeps a 1-2 px far-away laser spot from being averaged away).
  *
+ * Clipped white laser cores (high luma, near-neutral chroma) score via a coloured halo sampled
+ * a few pixels away — matching how phone cameras bloom a strong indoor laser into white.
+ *
  * Buffers are reused between calls; [values] is valid until the next [build]. Not thread-safe.
  */
 class ColorCellMap(private val params: ScorerParams = ScorerParams()) {
@@ -44,7 +47,12 @@ class ColorCellMap(private val params: ScorerParams = ScorerParams()) {
             for (x in x0 until x1) {
                 val luma = frame.lumaAt(x, y)
                 lumaSum += luma
-                val s = gate.strength(luma, frame.uAt(x, y) - 128, frame.vAt(x, y) - 128, hue)
+                val u = frame.uAt(x, y) - 128
+                val v = frame.vAt(x, y) - 128
+                var s = gate.strength(luma, u, v, hue)
+                if (s <= 0f && luma >= params.clipLuma && isNeutral(u, v)) {
+                    s = haloStrength(frame, x, y, hue)
+                }
                 if (s > 0f) {
                     val c = rowBase + (x - x0) / cell
                     if (s > values[c]) values[c] = s
@@ -52,5 +60,36 @@ class ColorCellMap(private val params: ScorerParams = ScorerParams()) {
             }
         }
         meanLuma = lumaSum.toFloat() / ((x1 - x0) * (y1 - y0))
+    }
+
+    private fun isNeutral(u: Int, v: Int): Boolean {
+        val tol = params.clipChromaTolerance
+        return u in -tol..tol && v in -tol..tol
+    }
+
+    /** Max hue strength among the four cardinal neighbours at [ScorerParams.haloRadius]. */
+    private fun haloStrength(frame: LumaChromaFrame, x: Int, y: Int, hue: BeamHue): Float {
+        val d = params.haloRadius
+        var best = 0f
+        for (k in 0 until 4) {
+            val sx = when (k) {
+                0 -> x - d
+                1 -> x + d
+                else -> x
+            }.coerceIn(0, frame.width - 1)
+            val sy = when (k) {
+                2 -> y - d
+                3 -> y + d
+                else -> y
+            }.coerceIn(0, frame.height - 1)
+            val s = gate.strength(
+                frame.lumaAt(sx, sy),
+                frame.uAt(sx, sy) - 128,
+                frame.vAt(sx, sy) - 128,
+                hue,
+            )
+            if (s > best) best = s
+        }
+        return if (best >= params.haloMin) best else 0f
     }
 }
