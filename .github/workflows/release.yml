@@ -47,8 +47,9 @@ jobs:
           body: |
             Beam Finder ${{ steps.apk.outputs.version }}
 
-            - Secondary dense-crop refine for weak/far beams (wide FOV kept)
-            - About update UX + stable GitHub APK signing
+            - Detect controls grouped into Sensitivity / Locks / Actions / Advanced panels
+            - Guide-line drag stays clear of the system shade at the top edge
+            - Menu refresh + remove unused detection-area width setting
 
             If you are on an earlier build: About → Check for update.
         env:
