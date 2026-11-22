@@ -82,4 +82,47 @@
     <string name="about_no_releases">עדיין לא פורסמה גרסה ב־GitHub Releases.</string>
     <string name="about_update_not_supported">העדכונים מנוהלים על ידי Google Play.</string>
     <string name="about_license">קוד פתוח ברישיון MIT.</string>
+    <string name="about_help">עזרה</string>
+    <string name="about_developer_section">מפתח</string>
+    <string name="about_developer_name">רפאל רשף</string>
+    <string name="about_disclaimer_title">הצהרת אחריות</string>
+    <string name="about_disclaimer_body">השימוש באפליקציה באחריות המשתמש בלבד.\n\n• לא מומלץ להשתמש מטווח של פחות מ־5 מטרים.\n• אין להשאיר את המצלמה חשופה ללייזר לאורך זמן ממושך.\n• לא מומלץ להשתמש בלייזר תעשייתי — רק בלייזר ממחלקה 2.</string>
+
+    <!-- Help -->
+    <string name="help_title">עזרה</string>
+    <string name="help_intro">מדריך קצר לכל מסך ולחצן.</string>
+    <string name="help_section_menu">תפריט</string>
+    <string name="help_menu_start">פותח את מסך הזיהוי ומפעיל את המצלמה.</string>
+    <string name="help_menu_settings">פותח את הגדרות האפליקציה (זיהוי, משוב, מצלמה, שפה).</string>
+    <string name="help_menu_about">מציג גרסה, פרטי מפתח, הצהרת אחריות, עזרה ועדכונים.</string>
+    <string name="help_section_detect">זיהוי</string>
+    <string name="help_detect_preview_title">תצוגת מצלמה</string>
+    <string name="help_detect_preview">תצוגה חיה מהמצלמה. הזיהוי רץ על כל הפריים במכשיר בלבד; שום דבר לא נשמר או נשלח. צביטה בשתי אצבעות לזום.</string>
+    <string name="help_detect_guide_title">קו מנחה</string>
+    <string name="help_detect_guide">סימון גובה ויזואלי בלבד. גרירה אנכית להזזה; נעילה מונעת הזזה בטעות.</string>
+    <string name="help_detect_level">מד אנכי של עוצמת האות הנוכחית, עם ספי התחלה ומלא.</string>
+    <string name="help_detect_quick_title">צבע / מצלמה</string>
+    <string name="help_detect_quick">החלפה מהירה של צבע הקרן (אדום/ירוק) ומצלמה קדמית/אחורית.</string>
+    <string name="help_detect_zoom">זום דיגיטלי. צביטה על התצוגה משנה גם את הערך הזה.</string>
+    <string name="help_detect_sensitivity">פותח את סליידר הרגישות לסשן הנוכחי. ערך גבוה יותר מזהה קרניים חלשות מוקדם יותר.</string>
+    <string name="help_detect_sensitivity_auto">מכוון רגישות לפי הסנוור החזק ביותר בסשן. אחרי 30 שניות בלי סנוור מתחיל סשן חדש.</string>
+    <string name="help_detect_lock_exposure">נועל חשיפה ואיזון לבן כדי שהתאורה תישאר יציבה בזמן כיוון.</string>
+    <string name="help_detect_lock_focus">מבצע מיקוד חד־פעמי ושומר אותו.</string>
+    <string name="help_detect_calibrate">מכייל מחדש את קו הבסיס הסביבתי. יש להרחיק את הקרן מהתמונה בזמן הכיול.</string>
+    <string name="help_detect_pocket">עמעום מסך והסתרת סרגלי מערכת לשימוש דיסקרטי. לחיצה ארוכה לביטול הנעילה.</string>
+    <string name="help_detect_debug">מציג מדדי זיהוי גולמיים על התצוגה לאבחון.</string>
+    <string name="help_section_settings">הגדרות</string>
+    <string name="help_setting_beam_color">צבע הלייזר שהגלאי מחפש.</string>
+    <string name="help_setting_sensitivity">רגישות ברירת מחדל (ניתן לכוון גם במסך הזיהוי).</string>
+    <string name="help_setting_roi_width">שמור להגבלת אזור זיהוי בעתיד. כרגע הזיהוי סורק את כל הפריים.</string>
+    <string name="help_setting_beep_style">סגנון הצליל כשמזוהה קרן.</string>
+    <string name="help_setting_audio_stream">ערוץ התראה (יכול לנגן גם במצב שקט במכשירים רבים) או ערוץ מדיה.</string>
+    <string name="help_setting_volume">עוצמת הצפצוף.</string>
+    <string name="help_setting_vibrate">רטט מסונכרן עם הצפצופים.</string>
+    <string name="help_setting_pocket_mode">אם פעיל, מסך הזיהוי נכנס למצב כיס אוטומטית אחרי הכיול הראשון.</string>
+    <string name="help_setting_camera_facing">מצלמת ברירת המחדל בפתיחת מסך הזיהוי.</string>
+    <string name="help_setting_low_exposure">מטה את המצלמה לחשיפה נמוכה כדי להפחית הילה מקרניים חזקות.</string>
+    <string name="help_setting_guide_line_y">מיקום אנכי ברירת מחדל של הקו המנחה.</string>
+    <string name="help_setting_guide_locked">מונע גרירת הקו המנחה במסך הזיהוי.</string>
+    <string name="help_setting_language">שפת האפליקציה: ברירת מערכת, עברית או אנגלית.</string>
 </resources>

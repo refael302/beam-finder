@@ -84,4 +84,48 @@
     <string name="about_no_releases">No GitHub release published yet.</string>
     <string name="about_update_not_supported">Updates are managed by Google Play.</string>
     <string name="about_license">Open source under the MIT license.</string>
+    <string name="about_help">Help</string>
+    <string name="about_developer_section">Developer</string>
+    <string name="about_developer_name">Refael Reshef</string>
+    <string name="about_developer_email" translatable="false">refael302@gmail.com</string>
+    <string name="about_disclaimer_title">Disclaimer</string>
+    <string name="about_disclaimer_body">Use of this app is at your own risk only.\n\n• Do not use at distances under 5 meters.\n• Do not leave the camera exposed to a laser beam for prolonged periods.\n• Not intended for industrial lasers — use only Class 2 lasers.</string>
+
+    <!-- Help -->
+    <string name="help_title">Help</string>
+    <string name="help_intro">Short guide to each screen and control.</string>
+    <string name="help_section_menu">Menu</string>
+    <string name="help_menu_start">Opens the detection screen and starts the camera.</string>
+    <string name="help_menu_settings">Opens app settings (detection, feedback, camera, language).</string>
+    <string name="help_menu_about">Shows version, developer contact, disclaimer, help, and updates.</string>
+    <string name="help_section_detect">Detect</string>
+    <string name="help_detect_preview_title">Camera preview</string>
+    <string name="help_detect_preview">Live camera view. Detection runs on the full frame on-device; nothing is saved or sent. Pinch with two fingers to zoom.</string>
+    <string name="help_detect_guide_title">Guide line</string>
+    <string name="help_detect_guide">Visual height reference only. Drag vertically to move; use the lock control to prevent accidental moves.</string>
+    <string name="help_detect_level">Vertical meter of current signal strength, with start and full thresholds.</string>
+    <string name="help_detect_quick_title">Color / camera pills</string>
+    <string name="help_detect_quick">Quick toggles for beam color (red/green) and front/back camera.</string>
+    <string name="help_detect_zoom">Digital zoom. Pinch on the preview also adjusts this value.</string>
+    <string name="help_detect_sensitivity">Opens the sensitivity slider for this session. Higher values detect weaker beams sooner.</string>
+    <string name="help_detect_sensitivity_auto">Tunes sensitivity from the strongest dazzle in the current session. After 30 seconds without a dazzle, a new session starts.</string>
+    <string name="help_detect_lock_exposure">Locks auto-exposure and white balance so lighting stays stable while you aim.</string>
+    <string name="help_detect_lock_focus">Runs one focus pass, then holds focus.</string>
+    <string name="help_detect_calibrate">Recalibrates ambient baseline. Keep the beam out of view while calibrating.</string>
+    <string name="help_detect_pocket">Dims the screen and hides system bars for discreet use. Long-press to unlock.</string>
+    <string name="help_detect_debug">Shows raw detection metrics on the preview for diagnostics.</string>
+    <string name="help_section_settings">Settings</string>
+    <string name="help_setting_beam_color">Which laser color the detector looks for.</string>
+    <string name="help_setting_sensitivity">Default detection sensitivity (also adjustable on the Detect screen).</string>
+    <string name="help_setting_roi_width">Reserved for future detection-area limits. Detection currently scans the full frame.</string>
+    <string name="help_setting_beep_style">Sound style used when a beam is detected.</string>
+    <string name="help_setting_audio_stream">Alarm stream (can play over silent mode on many devices) or media stream.</string>
+    <string name="help_setting_volume">Beep volume.</string>
+    <string name="help_setting_vibrate">Vibrate in sync with beeps.</string>
+    <string name="help_setting_pocket_mode">If enabled, Detect enters pocket mode automatically after the first calibration.</string>
+    <string name="help_setting_camera_facing">Default camera when Detect opens.</string>
+    <string name="help_setting_low_exposure">Biases the camera toward lower exposure to reduce bloom from bright beams.</string>
+    <string name="help_setting_guide_line_y">Default vertical position of the guide line.</string>
+    <string name="help_setting_guide_locked">Keeps the guide line from being dragged on Detect.</string>
+    <string name="help_setting_language">App language: system default, Hebrew, or English.</string>
 </resources>
