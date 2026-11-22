@@ -140,8 +140,11 @@ private fun DetectContent(
     DisposableEffect(controller) { onDispose { controller.release() } }
 
     // Detection + audio run while the screen is started (also in pocket mode, which keeps it on).
-    LifecycleStartEffect(viewModel) {
+    // Re-apply zoom/tuning on every START: CameraX often resets hardware zoom on stop/resume
+    // while session.linearZoom is unchanged, which left the slider ahead of the real zoom.
+    LifecycleStartEffect(viewModel, controller) {
         viewModel.onActive()
+        controller.reapplyTuning()
         onStopOrDispose { viewModel.onInactive() }
     }
 
@@ -162,6 +165,10 @@ private fun DetectContent(
 
     val tuning = viewModel.cameraTuning(s, session)
     LaunchedEffect(tuning) { controller.setTuning(tuning) }
+    // After the first bind completes, push tuning once more (START may have run while camera was null).
+    LaunchedEffect(status) {
+        if (status == CameraStatus.Running) controller.reapplyTuning()
+    }
 
     Column(modifier.fillMaxSize()) {
         // Camera overlay subtree is forced LTR so positions/gestures don't flip in Hebrew.

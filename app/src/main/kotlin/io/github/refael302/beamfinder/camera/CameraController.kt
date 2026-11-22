@@ -125,10 +125,15 @@ class CameraController(private val context: Context) {
         val old = tuning
         tuning = newTuning
         val cam = camera ?: return
-        if (old.linearZoom != newTuning.linearZoom) cam.cameraControl.setLinearZoom(newTuning.linearZoom)
+        // Always push zoom: after screen off/on CameraX may reset hardware zoom while our
+        // stored value is unchanged, so an equality check would skip the restore.
+        cam.cameraControl.setLinearZoom(newTuning.linearZoom)
         if (old.lowExposure != newTuning.lowExposure || old.aeAwbLock != newTuning.aeAwbLock) applyExposure(cam)
         if (appliedFocusLock != newTuning.focusLock) applyFocus(cam)
     }
+
+    /** Force-applies the current [tuning] (zoom/exposure/focus). Call on lifecycle START after resume. */
+    fun reapplyTuning() = applyAll()
 
     private fun applyAll() {
         val cam = camera ?: return

@@ -132,7 +132,9 @@ class DetectViewModel(
     /** Pinch: multiplicative [scale] -> additive change on the 0..1 linear zoom. */
     fun zoomBy(scale: Float) {
         if (scale <= 0f) return
-        _session.update { it.copy(linearZoom = (it.linearZoom + ln(scale) * PINCH_SENSITIVITY).coerceIn(0f, 1f)) }
+        // Clamp per-event scale so a bogus resume/pointer spike can't slam the slider to 0 or 1.
+        val clamped = scale.coerceIn(PINCH_SCALE_MIN, PINCH_SCALE_MAX)
+        _session.update { it.copy(linearZoom = (it.linearZoom + ln(clamped) * PINCH_SENSITIVITY).coerceIn(0f, 1f)) }
     }
 
     fun toggleAeAwbLock() = _session.update { it.copy(aeAwbLock = !it.aeAwbLock) }
@@ -204,6 +206,8 @@ class DetectViewModel(
     private companion object {
         /** Linear-zoom change per unit of ln(pinch scale). */
         const val PINCH_SENSITIVITY = 0.8f
+        const val PINCH_SCALE_MIN = 0.5f
+        const val PINCH_SCALE_MAX = 2f
     }
 }
 
