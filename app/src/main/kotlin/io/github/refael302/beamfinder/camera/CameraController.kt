@@ -43,8 +43,9 @@ data class CameraTuning(
 )
 
 /**
- * CameraX wrapper: Preview + ImageAnalysis (YUV_420_888, ~640x480, keep-only-latest) bound with
+ * CameraX wrapper: Preview + ImageAnalysis (YUV_420_888, ~1280x720, keep-only-latest) bound with
  * the PreviewView's ViewPort so the analysis crop rect equals the visible preview area.
+ * Wide detection downsamples; secondary refine crops densely from this higher-res stream.
  * Main-thread only.
  */
 class CameraController(private val context: Context) {
@@ -224,7 +225,7 @@ class CameraController(private val context: Context) {
 
     private companion object {
         const val TAG = "CameraController"
-        val ANALYSIS_SIZE = Size(640, 480)
+        val ANALYSIS_SIZE = Size(1280, 720)
         /** 1.0 = full way to the minimum exposure compensation. */
         const val LOW_EXPOSURE_FRACTION = 1.0f
     }

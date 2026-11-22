@@ -71,24 +71,34 @@ class FlashDetector(
             gridH = map.gridHeight
             lastHue = hue
             seeded = true
-            return ScoreBreakdown(0f, 0f, maxValue(cur, n), 0f, map.meanLuma)
+            val peakIdx = argMax(cur, n)
+            val (px, py) = map.cellCenterNorm(peakIdx)
+            return ScoreBreakdown(0f, 0f, maxValue(cur, n), 0f, map.meanLuma, px, py)
         }
 
         val dt = if (gap > 0) gap.toFloat() else params.defaultFrameMs
         val aUp = 1f - exp(-dt / params.riseTauMs)
         val aDown = 1f - exp(-dt / params.fallTauMs)
         var flash = 0f
+        var flashIdx = 0
         var peak = 0f
+        var peakIdx = 0
         var changed = 0
         var active = 0
         val bg = background
         for (i in 0 until n) {
             val c = cur[i]
-            if (c > peak) peak = c
+            if (c > peak) {
+                peak = c
+                peakIdx = i
+            }
             if (c >= params.spotPresence) active++
             val d = c - bg[i]
             if (d > 0f) {
-                if (d > flash) flash = d
+                if (d > flash) {
+                    flash = d
+                    flashIdx = i
+                }
                 if (d >= params.presence) changed++
                 bg[i] += aUp * d
             } else if (d < 0f) {
@@ -104,12 +114,16 @@ class FlashDetector(
         }
         // Small held laser spot: keep scoring. Wide coloured scenery: flash-only.
         val sustained = if (spotFraction > 0f && spotFraction <= params.maxSpotFraction) peak else 0f
+        val locIdx = if (flash >= sustained) flashIdx else peakIdx
+        val (px, py) = map.cellCenterNorm(locIdx)
         return ScoreBreakdown(
             score = (maxOf(flash, sustained) * motion).coerceIn(0f, 1f),
             flash = flash,
             peak = peak,
             coverage = coverage,
             meanLuma = map.meanLuma,
+            peakX = px,
+            peakY = py,
         )
     }
 
@@ -121,5 +135,17 @@ class FlashDetector(
         var m = 0f
         for (i in 0 until n) if (values[i] > m) m = values[i]
         return m
+    }
+
+    private fun argMax(values: FloatArray, n: Int): Int {
+        var best = 0
+        var m = Float.NEGATIVE_INFINITY
+        for (i in 0 until n) {
+            if (values[i] > m) {
+                m = values[i]
+                best = i
+            }
+        }
+        return best
     }
 }

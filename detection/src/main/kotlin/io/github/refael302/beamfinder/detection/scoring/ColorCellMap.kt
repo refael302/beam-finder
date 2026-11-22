@@ -29,12 +29,27 @@ class ColorCellMap(private val params: ScorerParams = ScorerParams()) {
     var meanLuma = 0f
         private set
 
+    private var regionLeft = 0
+    private var regionTop = 0
+    private var regionRight = 1
+    private var regionBottom = 1
+    private var cellPx = 1
+    private var frameWidth = 1
+    private var frameHeight = 1
+
     fun build(frame: LumaChromaFrame, roi: Roi, hue: BeamHue) {
         val x0 = ((roi.centerX - roi.width / 2f) * frame.width).toInt().coerceIn(0, frame.width - 1)
         val x1 = ((roi.centerX + roi.width / 2f) * frame.width).toInt().coerceIn(x0 + 1, frame.width)
         val y0 = ((roi.centerY - roi.height / 2f) * frame.height).toInt().coerceIn(0, frame.height - 1)
         val y1 = ((roi.centerY + roi.height / 2f) * frame.height).toInt().coerceIn(y0 + 1, frame.height)
         val cell = params.cellSize.coerceAtLeast(1)
+        regionLeft = x0
+        regionTop = y0
+        regionRight = x1
+        regionBottom = y1
+        cellPx = cell
+        frameWidth = frame.width
+        frameHeight = frame.height
         gridWidth = (x1 - x0 + cell - 1) / cell
         gridHeight = (y1 - y0 + cell - 1) / cell
         val n = gridWidth * gridHeight
@@ -60,6 +75,15 @@ class ColorCellMap(private val params: ScorerParams = ScorerParams()) {
             }
         }
         meanLuma = lumaSum.toFloat() / ((x1 - x0) * (y1 - y0))
+    }
+
+    /** Centre of cell [index] in normalized full-frame coordinates (0..1). */
+    fun cellCenterNorm(index: Int): Pair<Float, Float> {
+        val col = (index % gridWidth).coerceAtLeast(0)
+        val row = (index / gridWidth).coerceAtLeast(0)
+        val cx = regionLeft + col * cellPx + cellPx / 2f
+        val cy = regionTop + row * cellPx + cellPx / 2f
+        return (cx / frameWidth.coerceAtLeast(1)) to (cy / frameHeight.coerceAtLeast(1))
     }
 
     private fun isNeutral(u: Int, v: Int): Boolean {
