@@ -29,7 +29,12 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
                 onAbout = { navController.navigate(Routes.ABOUT) },
             )
         }
-        composable(Routes.DETECT) { DetectScreen(onBack = { navController.popBackStack() }) }
+        composable(Routes.DETECT) {
+            DetectScreen(
+                onBack = { navController.popBackStack() },
+                onSettings = { navController.navigate(Routes.SETTINGS) },
+            )
+        }
         composable(Routes.SETTINGS) { SettingsScreen(onBack = { navController.popBackStack() }) }
         composable(Routes.ABOUT) {
             AboutScreen(

@@ -1,5 +1,6 @@
 package io.github.refael302.beamfinder.ui.components
 
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -20,6 +21,7 @@ fun BeamTopBar(
     onBack: () -> Unit,
     /** When true, the bar is a translucent overlay so content (e.g. camera) shows through to the top edge. */
     overlay: Boolean = false,
+    actions: @Composable RowScope.() -> Unit = {},
 ) {
     TopAppBar(
         title = { Text(title) },
@@ -28,6 +30,7 @@ fun BeamTopBar(
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
             }
         },
+        actions = actions,
         colors = if (overlay) {
             TopAppBarDefaults.topAppBarColors(
                 containerColor = Color.Black.copy(alpha = 0.35f),

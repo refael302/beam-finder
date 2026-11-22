@@ -15,10 +15,15 @@ data class AppSettings(
     val sensitivity: Int = 50,
     val beepStyle: BeepStyle = BeepStyle.Pulse,
     val cameraFacing: CameraFacing = CameraFacing.Back,
+    /** Legacy DataStore key; dim screen is only started from the Detect button now. */
     val pocketMode: Boolean = false,
-    val vibrate: Boolean = true,
-    /** 0..1 */
-    val volume: Float = 0.8f,
+    /** Off on fresh install; once the user enables it, the choice is persisted. */
+    val vibrate: Boolean = false,
+    /**
+     * In-app beep gain 0..1. No Settings slider — use the device volume keys for loudness.
+     * Kept so existing DataStore values still apply.
+     */
+    val volume: Float = 1f,
     val audioStream: AudioStream = AudioStream.Alarm,
     /**
      * Detection area width, 0.1..1. Currently UNUSED by detection (the full frame is scanned and

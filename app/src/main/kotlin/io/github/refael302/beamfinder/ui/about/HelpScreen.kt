@@ -53,20 +53,14 @@ fun HelpScreen(onBack: () -> Unit) {
             HelpItem(R.string.detect_calibrate, R.string.help_detect_calibrate)
             HelpItem(R.string.detect_pocket, R.string.help_detect_pocket)
             HelpItem(R.string.detect_debug, R.string.help_detect_debug)
+            HelpItem(R.string.menu_settings, R.string.help_detect_settings)
 
             HelpSection(R.string.help_section_settings)
-            HelpItem(R.string.setting_beam_color, R.string.help_setting_beam_color)
-            HelpItem(R.string.setting_sensitivity, R.string.help_setting_sensitivity)
-            HelpItem(R.string.setting_roi_width, R.string.help_setting_roi_width)
             HelpItem(R.string.setting_beep_style, R.string.help_setting_beep_style)
             HelpItem(R.string.setting_audio_stream, R.string.help_setting_audio_stream)
-            HelpItem(R.string.setting_volume, R.string.help_setting_volume)
             HelpItem(R.string.setting_vibrate, R.string.help_setting_vibrate)
-            HelpItem(R.string.setting_pocket_mode, R.string.help_setting_pocket_mode)
-            HelpItem(R.string.setting_camera_facing, R.string.help_setting_camera_facing)
             HelpItem(R.string.setting_low_exposure, R.string.help_setting_low_exposure)
-            HelpItem(R.string.setting_guide_line_y, R.string.help_setting_guide_line_y)
-            HelpItem(R.string.setting_guide_locked, R.string.help_setting_guide_locked)
+            HelpItem(R.string.setting_roi_width, R.string.help_setting_roi_width)
             HelpItem(R.string.setting_language, R.string.help_setting_language)
         }
     }

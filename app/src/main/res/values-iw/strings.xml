@@ -36,22 +36,15 @@
 
     <!-- Settings -->
     <string name="settings_title">הגדרות</string>
-    <string name="settings_section_detection">זיהוי</string>
     <string name="settings_section_feedback">משוב</string>
     <string name="settings_section_camera">מצלמה</string>
     <string name="settings_section_general">כללי</string>
-    <string name="setting_beam_color">צבע הקרן</string>
     <string name="setting_sensitivity">רגישות</string>
     <string name="setting_beep_style">סגנון צפצוף</string>
-    <string name="setting_camera_facing">מצלמה</string>
-    <string name="setting_pocket_mode">עמעם מסך</string>
     <string name="setting_vibrate">רטט</string>
-    <string name="setting_volume">עוצמת קול</string>
     <string name="setting_audio_stream">ערוץ שמע</string>
     <string name="setting_roi_width">רוחב אזור הזיהוי</string>
     <string name="setting_low_exposure">חשיפה נמוכה</string>
-    <string name="setting_guide_line_y">מיקום קו מנחה</string>
-    <string name="setting_guide_locked">נעילת קו מנחה</string>
     <string name="setting_language">שפה</string>
 
     <string name="color_red">אדום</string>
@@ -93,7 +86,7 @@
     <string name="help_intro">מדריך קצר לכל מסך ולחצן.</string>
     <string name="help_section_menu">תפריט</string>
     <string name="help_menu_start">פותח את מסך הזיהוי ומפעיל את המצלמה.</string>
-    <string name="help_menu_settings">פותח את הגדרות האפליקציה (זיהוי, משוב, מצלמה, שפה).</string>
+    <string name="help_menu_settings">פותח הגדרות כלליות (משוב, אפשרויות מצלמה, שפה). זמין גם מגלגל השיניים במסך הזיהוי.</string>
     <string name="help_menu_about">מציג גרסה, פרטי מפתח, הצהרת אחריות, עזרה ועדכונים.</string>
     <string name="help_section_detect">זיהוי</string>
     <string name="help_detect_preview_title">תצוגת מצלמה</string>
@@ -111,18 +104,12 @@
     <string name="help_detect_calibrate">מכייל מחדש את קו הבסיס הסביבתי. יש להרחיק את הקרן מהתמונה בזמן הכיול.</string>
     <string name="help_detect_pocket">עמעום מסך והסתרת סרגלי מערכת לשימוש דיסקרטי (כפתור במסך הזיהוי). לחיצה ארוכה לביטול הנעילה.</string>
     <string name="help_detect_debug">מציג מדדי זיהוי גולמיים על התצוגה לאבחון.</string>
+    <string name="help_detect_settings">גלגל שיניים בסרגל העליון של מסך הזיהוי פותח הגדרות בלי לחזור לתפריט.</string>
     <string name="help_section_settings">הגדרות</string>
-    <string name="help_setting_beam_color">צבע הלייזר שהגלאי מחפש.</string>
-    <string name="help_setting_sensitivity">רגישות ברירת מחדל (ניתן לכוון גם במסך הזיהוי).</string>
     <string name="help_setting_roi_width">שמור להגבלת אזור זיהוי בעתיד. כרגע הזיהוי סורק את כל הפריים.</string>
     <string name="help_setting_beep_style">סגנון הצליל כשמזוהה קרן.</string>
-    <string name="help_setting_audio_stream">ערוץ התראה (יכול לנגן גם במצב שקט במכשירים רבים) או ערוץ מדיה.</string>
-    <string name="help_setting_volume">עוצמת הצפצוף.</string>
-    <string name="help_setting_vibrate">רטט מסונכרן עם הצפצופים.</string>
-    <string name="help_setting_pocket_mode">אם פעיל, מסך הזיהוי מתעמעם אוטומטית אחרי הכיול הראשון.</string>
-    <string name="help_setting_camera_facing">מצלמת ברירת המחדל בפתיחת מסך הזיהוי.</string>
+    <string name="help_setting_audio_stream">ערוץ התראה (יכול לנגן גם במצב שקט במכשירים רבים) או ערוץ מדיה. עוצמה דרך מקשי הווליום במכשיר.</string>
+    <string name="help_setting_vibrate">רטט מסונכרן עם הצפצופים. כבוי כברירת מחדל בהתקנה חדשה.</string>
     <string name="help_setting_low_exposure">מטה את המצלמה לחשיפה נמוכה כדי להפחית הילה מקרניים חזקות.</string>
-    <string name="help_setting_guide_line_y">מיקום אנכי ברירת מחדל של הקו המנחה.</string>
-    <string name="help_setting_guide_locked">מונע גרירת הקו המנחה במסך הזיהוי.</string>
     <string name="help_setting_language">שפת האפליקציה: ברירת מערכת, עברית או אנגלית.</string>
 </resources>
