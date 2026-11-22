@@ -1,5 +1,6 @@
 package io.github.refael302.beamfinder.ui.detect
 
+import android.os.SystemClock
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.refael302.beamfinder.audio.BeepEngine
@@ -8,6 +9,7 @@ import io.github.refael302.beamfinder.camera.LaserAnalyzer
 import io.github.refael302.beamfinder.detection.pipeline.DetectionResult
 import io.github.refael302.beamfinder.detection.pipeline.IntensityPipeline
 import io.github.refael302.beamfinder.detection.scoring.BeamHue
+import io.github.refael302.beamfinder.detection.sensitivity.AutoSensitivityTuner
 import io.github.refael302.beamfinder.detection.sensitivity.SensitivityModel
 import io.github.refael302.beamfinder.settings.AppSettings
 import io.github.refael302.beamfinder.settings.BeamColor
@@ -31,6 +33,10 @@ data class DetectSessionState(
     val focusLock: Boolean = false,
     val pocketActive: Boolean = false,
     val showDebug: Boolean = false,
+    /** Expands the sensitivity slider + Auto control on the Detect screen. */
+    val showSensitivity: Boolean = false,
+    /** When true, sensitivity tracks the strongest dazzle in the current auto session. */
+    val sensitivityAuto: Boolean = false,
     /** Guide Y while the user is dragging (persisted on release); null when idle. */
     val draggingGuideY: Float? = null,
 )
@@ -49,6 +55,8 @@ class DetectViewModel(
     private val pipeline = IntensityPipeline()
     val analyzer = LaserAnalyzer(pipeline) { result -> beepEngine.submit(result.intensity) }
     val detection: StateFlow<DetectionResult> = analyzer.results
+
+    private val autoSensitivity = AutoSensitivityTuner()
 
     /** Thresholds for the level meter; read from the detection module (SSOT). */
     val thresholds: StateFlow<SensitivityModel.Thresholds> = settings
@@ -74,11 +82,18 @@ class DetectViewModel(
                 .collect { pipeline.recalibrate() }
         }
         // Auto-enter pocket mode once the first calibration finishes, if enabled in settings.
+        // Also feed auto-sensitivity when that mode is on.
         viewModelScope.launch {
             detection.collect { r ->
                 if (autoPocketPending && !r.calibrating && r.fps > 0f) {
                     autoPocketPending = false
                     if (settings.value.pocketMode) _session.update { it.copy(pocketActive = true) }
+                }
+                if (_session.value.sensitivityAuto && !r.calibrating) {
+                    val next = autoSensitivity.onSample(r.intensity, SystemClock.elapsedRealtime())
+                    if (next != null && next != settings.value.sensitivity) {
+                        repository.update { it.copy(sensitivity = next) }
+                    }
                 }
             }
         }
@@ -105,6 +120,7 @@ class DetectViewModel(
         if (!active) return
         active = false
         autoPocketPending = false
+        autoSensitivity.reset()
         beepEngine.stop()
         analyzer.clear()
     }
@@ -124,6 +140,24 @@ class DetectViewModel(
     fun toggleFocusLock() = _session.update { it.copy(focusLock = !it.focusLock) }
 
     fun toggleDebug() = _session.update { it.copy(showDebug = !it.showDebug) }
+
+    fun toggleSensitivityPanel() = _session.update { it.copy(showSensitivity = !it.showSensitivity) }
+
+    fun toggleSensitivityAuto() {
+        _session.update { current ->
+            val enabling = !current.sensitivityAuto
+            if (enabling) autoSensitivity.reset()
+            current.copy(sensitivityAuto = enabling)
+        }
+    }
+
+    /** Manual slider: persist sensitivity and leave auto mode. */
+    fun setSensitivityManual(value: Int) {
+        _session.update { it.copy(sensitivityAuto = false) }
+        viewModelScope.launch {
+            repository.update { it.copy(sensitivity = value.coerceIn(AppSettings.SENSITIVITY_RANGE)) }
+        }
+    }
 
     fun setPocket(active: Boolean) = _session.update { it.copy(pocketActive = active) }
 

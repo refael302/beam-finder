@@ -30,4 +30,19 @@ class SensitivityModelTest {
         assertEquals(SensitivityModel.thresholds(0), SensitivityModel.thresholds(-50))
         assertEquals(SensitivityModel.thresholds(100), SensitivityModel.thresholds(500))
     }
+
+    @Test
+    fun sensitivityForFullThresholdInvertsThresholds() {
+        for (s in listOf(0, 25, 50, 75, 100)) {
+            val full = SensitivityModel.thresholds(s).fullThreshold
+            assertEquals(s, SensitivityModel.sensitivityForFullThreshold(full), "s=$s full=$full")
+        }
+    }
+
+    @Test
+    fun strongerPeakMapsToLowerSensitivity() {
+        val weak = SensitivityModel.sensitivityForFullThreshold(0.40f)
+        val strong = SensitivityModel.sensitivityForFullThreshold(0.90f)
+        assertTrue(strong < weak)
+    }
 }

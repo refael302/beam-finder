@@ -25,6 +25,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -46,12 +47,14 @@ import io.github.refael302.beamfinder.R
 import io.github.refael302.beamfinder.camera.CameraController
 import io.github.refael302.beamfinder.detection.pipeline.DetectionResult
 import io.github.refael302.beamfinder.detection.sensitivity.SensitivityModel
+import io.github.refael302.beamfinder.settings.AppSettings
 import io.github.refael302.beamfinder.settings.BeamColor
 import io.github.refael302.beamfinder.settings.CameraFacing
 import io.github.refael302.beamfinder.ui.AppViewModelProvider
 import io.github.refael302.beamfinder.ui.components.BeamTopBar
 import kotlinx.coroutines.CancellationException
 import java.util.Locale
+import kotlin.math.roundToInt
 
 @Composable
 fun DetectScreen(
@@ -233,6 +236,8 @@ private fun DebugInfo(d: DetectionResult, thresholds: SensitivityModel.Threshold
 
 @Composable
 private fun Controls(viewModel: DetectViewModel, session: DetectSessionState) {
+    val settings by viewModel.settings.collectAsStateWithLifecycle()
+
     Column(
         Modifier
             .fillMaxWidth()
@@ -249,11 +254,24 @@ private fun Controls(viewModel: DetectViewModel, session: DetectSessionState) {
                     .padding(start = 12.dp),
             )
         }
+        if (session.showSensitivity) {
+            SensitivityControls(
+                sensitivity = settings.sensitivity,
+                auto = session.sensitivityAuto,
+                onSensitivityCommit = viewModel::setSensitivityManual,
+                onToggleAuto = viewModel::toggleSensitivityAuto,
+            )
+        }
         Row(
             Modifier.horizontalScroll(rememberScrollState()),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
+            FilterChip(
+                selected = session.showSensitivity,
+                onClick = viewModel::toggleSensitivityPanel,
+                label = { Text(stringResource(R.string.setting_sensitivity)) },
+            )
             FilterChip(
                 selected = session.aeAwbLock,
                 onClick = viewModel::toggleAeAwbLock,
@@ -272,6 +290,41 @@ private fun Controls(viewModel: DetectViewModel, session: DetectSessionState) {
                 label = { Text(stringResource(R.string.detect_debug)) },
             )
         }
+    }
+}
+
+/** Sensitivity slider + Auto chip; local drag state commits when the finger lifts. */
+@Composable
+private fun SensitivityControls(
+    sensitivity: Int,
+    auto: Boolean,
+    onSensitivityCommit: (Int) -> Unit,
+    onToggleAuto: () -> Unit,
+) {
+    var local by remember(sensitivity) { mutableFloatStateOf(sensitivity.toFloat()) }
+    Row(
+        Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Text(
+            local.roundToInt().toString(),
+            style = MaterialTheme.typography.labelLarge,
+            modifier = Modifier.width(28.dp),
+        )
+        Slider(
+            value = local,
+            onValueChange = { local = it },
+            onValueChangeFinished = { onSensitivityCommit(local.roundToInt()) },
+            valueRange = AppSettings.SENSITIVITY_RANGE.first.toFloat()..AppSettings.SENSITIVITY_RANGE.last.toFloat(),
+            steps = AppSettings.SENSITIVITY_RANGE.last - AppSettings.SENSITIVITY_RANGE.first - 1,
+            modifier = Modifier.weight(1f),
+        )
+        FilterChip(
+            selected = auto,
+            onClick = onToggleAuto,
+            label = { Text(stringResource(R.string.detect_sensitivity_auto)) },
+        )
     }
 }
 
