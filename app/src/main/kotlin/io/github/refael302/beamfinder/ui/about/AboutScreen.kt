@@ -3,12 +3,16 @@ package io.github.refael302.beamfinder.ui.about
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
@@ -18,6 +22,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -29,16 +34,19 @@ import io.github.refael302.beamfinder.ui.components.BeamTopBar
 @Composable
 fun AboutScreen(
     onBack: () -> Unit,
+    onHelp: () -> Unit,
     viewModel: AboutViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val email = stringResource(R.string.about_developer_email)
 
     Scaffold(topBar = { BeamTopBar(stringResource(R.string.about_title), onBack) }) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
+                .verticalScroll(rememberScrollState())
                 .padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
@@ -48,6 +56,37 @@ fun AboutScreen(
                 style = MaterialTheme.typography.bodyLarge,
             )
             Text(stringResource(R.string.about_license), style = MaterialTheme.typography.bodyMedium)
+
+            HorizontalDivider()
+
+            Text(stringResource(R.string.about_developer_section), style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.about_developer_name), style = MaterialTheme.typography.bodyLarge)
+            Text(
+                text = email,
+                style = MaterialTheme.typography.bodyLarge.copy(
+                    color = MaterialTheme.colorScheme.primary,
+                    textDecoration = TextDecoration.Underline,
+                ),
+                modifier = Modifier.clickable {
+                    context.startActivity(
+                        Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:$email"))
+                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+                    )
+                },
+            )
+
+            HorizontalDivider()
+
+            Text(stringResource(R.string.about_disclaimer_title), style = MaterialTheme.typography.titleMedium)
+            Text(
+                stringResource(R.string.about_disclaimer_body),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+
+            OutlinedButton(onClick = onHelp, modifier = Modifier.fillMaxWidth()) {
+                Text(stringResource(R.string.about_help))
+            }
 
             OutlinedButton(
                 onClick = viewModel::checkForUpdate,
@@ -95,7 +134,6 @@ fun AboutScreen(
                 ) {
                     Text(stringResource(R.string.about_update_open_settings))
                 }
-                // Retry after the user returns from settings.
                 OutlinedButton(onClick = viewModel::install, modifier = Modifier.fillMaxWidth()) {
                     Text(stringResource(R.string.about_update_button))
                 }

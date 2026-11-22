@@ -6,6 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import io.github.refael302.beamfinder.ui.about.AboutScreen
+import io.github.refael302.beamfinder.ui.about.HelpScreen
 import io.github.refael302.beamfinder.ui.detect.DetectScreen
 import io.github.refael302.beamfinder.ui.menu.MenuScreen
 import io.github.refael302.beamfinder.ui.settings.SettingsScreen
@@ -15,6 +16,7 @@ object Routes {
     const val DETECT = "detect"
     const val SETTINGS = "settings"
     const val ABOUT = "about"
+    const val HELP = "help"
 }
 
 @Composable
@@ -29,6 +31,12 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
         }
         composable(Routes.DETECT) { DetectScreen(onBack = { navController.popBackStack() }) }
         composable(Routes.SETTINGS) { SettingsScreen(onBack = { navController.popBackStack() }) }
-        composable(Routes.ABOUT) { AboutScreen(onBack = { navController.popBackStack() }) }
+        composable(Routes.ABOUT) {
+            AboutScreen(
+                onBack = { navController.popBackStack() },
+                onHelp = { navController.navigate(Routes.HELP) },
+            )
+        }
+        composable(Routes.HELP) { HelpScreen(onBack = { navController.popBackStack() }) }
     }
 }
