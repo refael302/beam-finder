@@ -13,8 +13,8 @@ android {
         applicationId = "io.github.refael302.beamfinder"
         minSdk = 26
         targetSdk = 36
-        versionCode = 5
-        versionName = "0.1.4"
+        versionCode = 6
+        versionName = "0.1.5"
     }
 
     // Stable key for GitHub sideload OTA. CI debug keystores are ephemeral per runner,
