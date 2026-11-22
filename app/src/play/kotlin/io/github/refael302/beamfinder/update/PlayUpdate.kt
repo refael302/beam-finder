@@ -6,5 +6,8 @@ class PlayUpdateChecker : UpdateChecker {
 }
 
 class PlayUpdateInstaller : UpdateInstaller {
-    override suspend fun install(info: UpdateInfo): InstallResult = InstallResult.NotSupported
+    override suspend fun install(
+        info: UpdateInfo,
+        onProgress: (InstallProgress) -> Unit,
+    ): InstallResult = InstallResult.NotSupported
 }

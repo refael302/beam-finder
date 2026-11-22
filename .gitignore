@@ -13,3 +13,4 @@ captures/
 *.jks
 *.keystore
 .DS_Store
+!app/signing/github-distribution.keystore

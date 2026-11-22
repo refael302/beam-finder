@@ -13,6 +13,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
@@ -30,6 +31,8 @@ import io.github.refael302.beamfinder.BuildConfig
 import io.github.refael302.beamfinder.R
 import io.github.refael302.beamfinder.ui.AppViewModelProvider
 import io.github.refael302.beamfinder.ui.components.BeamTopBar
+import io.github.refael302.beamfinder.update.InstallErrorCodes
+import io.github.refael302.beamfinder.update.UpdateInfo
 
 @Composable
 fun AboutScreen(
@@ -88,56 +91,147 @@ fun AboutScreen(
                 Text(stringResource(R.string.about_help))
             }
 
+            val busy = state is UpdateUiState.Downloading ||
+                state is UpdateUiState.Preparing ||
+                state is UpdateUiState.AwaitingConfirmation
+
             OutlinedButton(
                 onClick = viewModel::checkForUpdate,
-                enabled = state != UpdateUiState.Checking,
+                enabled = state !is UpdateUiState.Checking && !busy,
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Text(stringResource(R.string.about_check_update))
             }
 
-            val statusText = when (val st = state) {
-                UpdateUiState.Idle -> null
-                UpdateUiState.Checking -> stringResource(R.string.about_checking)
-                UpdateUiState.UpToDate -> stringResource(R.string.about_up_to_date)
-                UpdateUiState.NotSupported -> stringResource(R.string.about_update_not_supported)
-                is UpdateUiState.Available ->
-                    stringResource(R.string.about_update_available, st.info.versionName)
-                UpdateUiState.Installing -> stringResource(R.string.about_updating)
-                is UpdateUiState.NeedsPermission -> stringResource(R.string.about_update_needs_permission)
-                is UpdateUiState.Error -> if (st.message == "no releases yet") {
-                    stringResource(R.string.about_no_releases)
-                } else {
-                    stringResource(R.string.about_update_error, st.message)
-                }
-            }
-            if (statusText != null) {
-                Text(statusText, style = MaterialTheme.typography.bodyMedium)
-            }
+            UpdateStatusSection(
+                state = state,
+                onInstall = viewModel::install,
+                onCancel = viewModel::cancelInstall,
+                onOpenUnknownSources = {
+                    context.startActivity(
+                        Intent(
+                            Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                            Uri.parse("package:${context.packageName}"),
+                        ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+                    )
+                },
+                onOpenReleasePage = { info ->
+                    val url = info.pageUrl ?: return@UpdateStatusSection
+                    context.startActivity(
+                        Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+                    )
+                },
+            )
+        }
+    }
+}
 
-            if (state is UpdateUiState.Available) {
-                Button(onClick = viewModel::install, modifier = Modifier.fillMaxWidth()) {
-                    Text(stringResource(R.string.about_update_button))
-                }
+@Composable
+private fun UpdateStatusSection(
+    state: UpdateUiState,
+    onInstall: () -> Unit,
+    onCancel: () -> Unit,
+    onOpenUnknownSources: () -> Unit,
+    onOpenReleasePage: (UpdateInfo) -> Unit,
+) {
+    val statusText = when (val st = state) {
+        UpdateUiState.Idle -> null
+        UpdateUiState.Checking -> stringResource(R.string.about_checking)
+        UpdateUiState.UpToDate -> stringResource(R.string.about_up_to_date)
+        UpdateUiState.NotSupported -> stringResource(R.string.about_update_not_supported)
+        is UpdateUiState.Available ->
+            stringResource(R.string.about_update_available, st.info.versionName)
+        is UpdateUiState.Downloading -> downloadLabel(st.bytesRead, st.totalBytes)
+        is UpdateUiState.Preparing -> stringResource(R.string.about_update_preparing)
+        is UpdateUiState.AwaitingConfirmation -> stringResource(R.string.about_update_confirm)
+        is UpdateUiState.NeedsPermission -> stringResource(R.string.about_update_needs_permission)
+        is UpdateUiState.Error -> when (st.message) {
+            "no releases yet" -> stringResource(R.string.about_no_releases)
+            InstallErrorCodes.CANCELLED -> stringResource(R.string.about_update_cancelled)
+            InstallErrorCodes.SIGNATURE -> stringResource(R.string.about_update_signature_mismatch)
+            else -> stringResource(R.string.about_update_error, st.message)
+        }
+    }
+    if (statusText != null) {
+        Text(statusText, style = MaterialTheme.typography.bodyMedium)
+    }
+
+    when (val st = state) {
+        is UpdateUiState.Downloading -> {
+            val total = st.totalBytes
+            if (total != null && total > 0L) {
+                LinearProgressIndicator(
+                    progress = { (st.bytesRead.toFloat() / total.toFloat()).coerceIn(0f, 1f) },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            } else {
+                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
             }
-            if (state is UpdateUiState.NeedsPermission) {
-                Button(
-                    onClick = {
-                        context.startActivity(
-                            Intent(
-                                Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
-                                Uri.parse("package:${context.packageName}"),
-                            ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
-                        )
-                    },
+            OutlinedButton(onClick = onCancel, modifier = Modifier.fillMaxWidth()) {
+                Text(stringResource(R.string.about_update_cancel))
+            }
+        }
+        is UpdateUiState.Preparing -> {
+            LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+            OutlinedButton(onClick = onCancel, modifier = Modifier.fillMaxWidth()) {
+                Text(stringResource(R.string.about_update_cancel))
+            }
+        }
+        is UpdateUiState.AwaitingConfirmation -> {
+            LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+            OutlinedButton(onClick = onCancel, modifier = Modifier.fillMaxWidth()) {
+                Text(stringResource(R.string.about_update_cancel))
+            }
+            if (st.info.pageUrl != null) {
+                OutlinedButton(
+                    onClick = { onOpenReleasePage(st.info) },
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    Text(stringResource(R.string.about_update_open_settings))
-                }
-                OutlinedButton(onClick = viewModel::install, modifier = Modifier.fillMaxWidth()) {
-                    Text(stringResource(R.string.about_update_button))
+                    Text(stringResource(R.string.about_update_open_release))
                 }
             }
         }
+        is UpdateUiState.Available -> {
+            Button(onClick = onInstall, modifier = Modifier.fillMaxWidth()) {
+                Text(stringResource(R.string.about_update_button))
+            }
+        }
+        is UpdateUiState.NeedsPermission -> {
+            Button(onClick = onOpenUnknownSources, modifier = Modifier.fillMaxWidth()) {
+                Text(stringResource(R.string.about_update_open_settings))
+            }
+            OutlinedButton(onClick = onInstall, modifier = Modifier.fillMaxWidth()) {
+                Text(stringResource(R.string.about_update_button))
+            }
+        }
+        is UpdateUiState.Error -> {
+            if (st.info != null) {
+                Button(onClick = onInstall, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.about_update_button))
+                }
+                if (st.info.pageUrl != null) {
+                    OutlinedButton(
+                        onClick = { onOpenReleasePage(st.info) },
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text(stringResource(R.string.about_update_open_release))
+                    }
+                }
+            }
+        }
+        else -> Unit
+    }
+}
+
+@Composable
+private fun downloadLabel(bytesRead: Long, totalBytes: Long?): String {
+    val readMb = bytesRead / (1024f * 1024f)
+    return if (totalBytes != null && totalBytes > 0L) {
+        val totalMb = totalBytes / (1024f * 1024f)
+        val percent = ((100L * bytesRead) / totalBytes).toInt().coerceIn(0, 100)
+        stringResource(R.string.about_update_downloading_progress, percent, readMb, totalMb)
+    } else {
+        stringResource(R.string.about_update_downloading_bytes, readMb)
     }
 }

@@ -71,9 +71,17 @@
     <string name="about_update_available">Version %1$s is available.</string>
     <string name="about_update_button">Update</string>
     <string name="about_updating">Downloading and installing update…</string>
+    <string name="about_update_downloading_progress">Downloading… %1$d%% (%2$.1f / %3$.1f MB)</string>
+    <string name="about_update_downloading_bytes">Downloading… %1$.1f MB</string>
+    <string name="about_update_preparing">Preparing install…</string>
+    <string name="about_update_confirm">Confirm the update in the system dialog.</string>
+    <string name="about_update_cancel">Cancel</string>
+    <string name="about_update_open_release">Open release page</string>
     <string name="about_update_needs_permission">Allow Beam Finder to install unknown apps to update.</string>
     <string name="about_update_open_settings">Open settings</string>
     <string name="about_update_error">Update failed: %1$s</string>
+    <string name="about_update_cancelled">Update cancelled.</string>
+    <string name="about_update_signature_mismatch">Install blocked (different signing key). Uninstall Beam Finder, then install the new APK from the GitHub release page.</string>
     <string name="about_no_releases">No GitHub release published yet.</string>
     <string name="about_update_not_supported">Updates are managed by Google Play.</string>
     <string name="about_license">Open source under the MIT license.</string>
