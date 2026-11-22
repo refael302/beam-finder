@@ -112,7 +112,6 @@ class DetectViewModel(
     fun onInactive() {
         if (!active) return
         active = false
-        autoPocketPending = false
         autoSensitivity.reset()
         beepEngine.stop()
         analyzer.clear()
