@@ -21,6 +21,7 @@
     <string name="detect_calibrating">Calibrating… keep the beam out of view</string>
     <string name="detect_beam_detected">Beam detected</string>
     <string name="detect_zoom">Zoom</string>
+    <string name="detect_sensitivity_auto">Auto</string>
     <string name="detect_lock_exposure">Lock exposure</string>
     <string name="detect_lock_focus">Lock focus</string>
     <string name="detect_calibrate">Calibrate</string>

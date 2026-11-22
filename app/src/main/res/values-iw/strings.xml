@@ -21,6 +21,7 @@
     <string name="detect_calibrating">מכייל… יש להרחיק את הקרן מהתמונה</string>
     <string name="detect_beam_detected">זוהתה קרן</string>
     <string name="detect_zoom">זום</string>
+    <string name="detect_sensitivity_auto">אוטומטי</string>
     <string name="detect_lock_exposure">נעילת חשיפה</string>
     <string name="detect_lock_focus">נעילת מיקוד</string>
     <string name="detect_calibrate">כייל</string>
