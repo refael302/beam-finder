@@ -1,5 +1,6 @@
 package io.github.refael302.beamfinder.ui.detect
 
+import androidx.activity.compose.LocalActivity
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
@@ -35,9 +36,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.view.WindowCompat
 import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -60,17 +63,44 @@ fun DetectScreen(
 ) {
     val session by viewModel.session.collectAsStateWithLifecycle()
     KeepScreenOn()
+    LightStatusBarIcons()
 
     Box(Modifier.fillMaxSize()) {
-        Scaffold(topBar = { BeamTopBar(stringResource(R.string.detect_title), onBack) }) { padding ->
+        Scaffold(
+            topBar = {
+                BeamTopBar(stringResource(R.string.detect_title), onBack, overlay = true)
+            },
+            containerColor = Color.Black,
+        ) { padding ->
+            // Permission UI stays inset under the top bar; camera draws edge-to-edge under it.
             CameraPermissionGate(Modifier.padding(padding)) {
-                DetectContent(viewModel, Modifier.padding(padding))
+                DetectContent(
+                    viewModel,
+                    Modifier
+                        .fillMaxSize()
+                        .padding(bottom = padding.calculateBottomPadding()),
+                    overlayTopInset = padding.calculateTopPadding(),
+                )
             }
         }
         // Drawn above the Scaffold (covers the top bar); the camera keeps running underneath.
         if (session.pocketActive) {
             PocketOverlay(onUnlock = { viewModel.setPocket(false) })
         }
+    }
+}
+
+/** Camera fills under the status bar; force light icons so they stay readable. */
+@Composable
+private fun LightStatusBarIcons() {
+    val activity = LocalActivity.current
+    DisposableEffect(activity) {
+        val window = activity?.window
+        if (window == null) return@DisposableEffect onDispose { }
+        val insets = WindowCompat.getInsetsController(window, window.decorView)
+        val wasLight = insets.isAppearanceLightStatusBars
+        insets.isAppearanceLightStatusBars = false
+        onDispose { insets.isAppearanceLightStatusBars = wasLight }
     }
 }
 
@@ -82,7 +112,12 @@ private sealed interface CameraStatus {
 }
 
 @Composable
-private fun DetectContent(viewModel: DetectViewModel, modifier: Modifier = Modifier) {
+private fun DetectContent(
+    viewModel: DetectViewModel,
+    modifier: Modifier = Modifier,
+    /** Space reserved by the translucent top bar + status bar; keep overlays readable below it. */
+    overlayTopInset: Dp = 0.dp,
+) {
     val s by viewModel.settings.collectAsStateWithLifecycle()
     val session by viewModel.session.collectAsStateWithLifecycle()
     val detection by viewModel.detection.collectAsStateWithLifecycle()
@@ -155,7 +190,13 @@ private fun DetectContent(viewModel: DetectViewModel, modifier: Modifier = Modif
                         .padding(start = 12.dp),
                 )
 
-                StatusBanner(status, detection, Modifier.align(Alignment.TopCenter).padding(top = 12.dp))
+                StatusBanner(
+                    status,
+                    detection,
+                    Modifier
+                        .align(Alignment.TopCenter)
+                        .padding(top = overlayTopInset + 12.dp),
+                )
 
                 QuickControls(
                     colorLabel = stringResource(if (s.beamColor == BeamColor.Red) R.string.color_red else R.string.color_green),
