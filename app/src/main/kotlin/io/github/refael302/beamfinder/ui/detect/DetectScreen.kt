@@ -10,7 +10,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -33,10 +35,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -208,16 +213,25 @@ private fun DetectContent(
                         .padding(top = overlayTopInset + 12.dp),
                 )
 
-                QuickControls(
-                    colorLabel = stringResource(if (s.beamColor == BeamColor.Red) R.string.color_red else R.string.color_green),
-                    colorDot = s.beamColor.uiColor(),
-                    cameraLabel = stringResource(if (s.cameraFacing == CameraFacing.Back) R.string.camera_back else R.string.camera_front),
-                    onToggleColor = viewModel::toggleBeamColor,
-                    onToggleCamera = viewModel::toggleCameraFacing,
-                    modifier = Modifier
+                Column(
+                    Modifier
                         .align(Alignment.BottomEnd)
                         .padding(end = 4.dp, bottom = 4.dp),
-                )
+                    horizontalAlignment = Alignment.End,
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    VerticalZoomSlider(
+                        value = session.linearZoom,
+                        onValueChange = viewModel::setLinearZoom,
+                    )
+                    QuickControls(
+                        colorLabel = stringResource(if (s.beamColor == BeamColor.Red) R.string.color_red else R.string.color_green),
+                        colorDot = s.beamColor.uiColor(),
+                        cameraLabel = stringResource(if (s.cameraFacing == CameraFacing.Back) R.string.camera_back else R.string.camera_front),
+                        onToggleColor = viewModel::toggleBeamColor,
+                        onToggleCamera = viewModel::toggleCameraFacing,
+                    )
+                }
 
                 if (session.showDebug) {
                     DebugInfo(detection, thresholds, Modifier.align(Alignment.BottomStart).padding(8.dp))
@@ -226,6 +240,34 @@ private fun DetectContent(
         }
 
         Controls(viewModel, session)
+    }
+}
+
+/**
+ * Vertical zoom control: after −90° rotation, slider min (0) is at the bottom (zoom out)
+ * and max (1) is at the top (zoom in).
+ */
+@Composable
+private fun VerticalZoomSlider(
+    value: Float,
+    onValueChange: (Float) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val description = stringResource(R.string.detect_zoom)
+    Box(
+        modifier
+            .width(40.dp)
+            .height(168.dp)
+            .semantics { contentDescription = description },
+        contentAlignment = Alignment.Center,
+    ) {
+        Slider(
+            value = value,
+            onValueChange = onValueChange,
+            modifier = Modifier
+                .requiredSize(width = 168.dp, height = 40.dp)
+                .rotate(-90f),
+        )
     }
 }
 
@@ -292,16 +334,6 @@ private fun Controls(viewModel: DetectViewModel, session: DetectSessionState) {
             .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(stringResource(R.string.detect_zoom), style = MaterialTheme.typography.labelLarge)
-            Slider(
-                value = session.linearZoom,
-                onValueChange = viewModel::setLinearZoom,
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(start = 12.dp),
-            )
-        }
         if (session.showSensitivity) {
             SensitivityControls(
                 sensitivity = settings.sensitivity,

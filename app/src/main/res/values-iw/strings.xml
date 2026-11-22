@@ -25,7 +25,7 @@
     <string name="detect_lock_exposure">נעילת חשיפה</string>
     <string name="detect_lock_focus">נעילת מיקוד</string>
     <string name="detect_calibrate">כייל</string>
-    <string name="detect_pocket">כיס</string>
+    <string name="detect_pocket">עמעם מסך</string>
     <string name="detect_pocket_unlock_hint">לחיצה ארוכה לביטול הנעילה</string>
     <string name="detect_debug">ניפוי באגים</string>
     <string name="detect_level">עוצמת אות</string>
@@ -44,7 +44,7 @@
     <string name="setting_sensitivity">רגישות</string>
     <string name="setting_beep_style">סגנון צפצוף</string>
     <string name="setting_camera_facing">מצלמה</string>
-    <string name="setting_pocket_mode">מצב כיס</string>
+    <string name="setting_pocket_mode">עמעם מסך</string>
     <string name="setting_vibrate">רטט</string>
     <string name="setting_volume">עוצמת קול</string>
     <string name="setting_audio_stream">ערוץ שמע</string>
@@ -103,13 +103,13 @@
     <string name="help_detect_level">מד אנכי של עוצמת האות הנוכחית, עם ספי התחלה ומלא.</string>
     <string name="help_detect_quick_title">צבע / מצלמה</string>
     <string name="help_detect_quick">החלפה מהירה של צבע הקרן (אדום/ירוק) ומצלמה קדמית/אחורית.</string>
-    <string name="help_detect_zoom">זום דיגיטלי. צביטה על התצוגה משנה גם את הערך הזה.</string>
+    <string name="help_detect_zoom">סליידר אנכי בצד ימין למטה של התצוגה: למעלה זום פנימה, למטה התרחקות. צביטה על התצוגה משנה גם את הערך הזה.</string>
     <string name="help_detect_sensitivity">פותח את סליידר הרגישות לסשן הנוכחי. ערך גבוה יותר מזהה קרניים חלשות מוקדם יותר.</string>
     <string name="help_detect_sensitivity_auto">מכוון רגישות לפי הסנוור החזק ביותר בסשן. אחרי 30 שניות בלי סנוור מתחיל סשן חדש.</string>
     <string name="help_detect_lock_exposure">נועל חשיפה ואיזון לבן כדי שהתאורה תישאר יציבה בזמן כיוון.</string>
     <string name="help_detect_lock_focus">מבצע מיקוד חד־פעמי ושומר אותו.</string>
     <string name="help_detect_calibrate">מכייל מחדש את קו הבסיס הסביבתי. יש להרחיק את הקרן מהתמונה בזמן הכיול.</string>
-    <string name="help_detect_pocket">עמעום מסך והסתרת סרגלי מערכת לשימוש דיסקרטי. לחיצה ארוכה לביטול הנעילה.</string>
+    <string name="help_detect_pocket">עמעום מסך והסתרת סרגלי מערכת לשימוש דיסקרטי (כפתור במסך הזיהוי). לחיצה ארוכה לביטול הנעילה.</string>
     <string name="help_detect_debug">מציג מדדי זיהוי גולמיים על התצוגה לאבחון.</string>
     <string name="help_section_settings">הגדרות</string>
     <string name="help_setting_beam_color">צבע הלייזר שהגלאי מחפש.</string>
@@ -119,7 +119,7 @@
     <string name="help_setting_audio_stream">ערוץ התראה (יכול לנגן גם במצב שקט במכשירים רבים) או ערוץ מדיה.</string>
     <string name="help_setting_volume">עוצמת הצפצוף.</string>
     <string name="help_setting_vibrate">רטט מסונכרן עם הצפצופים.</string>
-    <string name="help_setting_pocket_mode">אם פעיל, מסך הזיהוי נכנס למצב כיס אוטומטית אחרי הכיול הראשון.</string>
+    <string name="help_setting_pocket_mode">אם פעיל, מסך הזיהוי מתעמעם אוטומטית אחרי הכיול הראשון.</string>
     <string name="help_setting_camera_facing">מצלמת ברירת המחדל בפתיחת מסך הזיהוי.</string>
     <string name="help_setting_low_exposure">מטה את המצלמה לחשיפה נמוכה כדי להפחית הילה מקרניים חזקות.</string>
     <string name="help_setting_guide_line_y">מיקום אנכי ברירת מחדל של הקו המנחה.</string>
