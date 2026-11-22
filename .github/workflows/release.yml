@@ -47,10 +47,9 @@ jobs:
           body: |
             Beam Finder ${{ steps.apk.outputs.version }}
 
-            - Edge-to-edge detect preview (camera under status/top bar)
-            - Sensitivity slider with Auto session tune on Detect
-            - Zoom re-applied correctly after screen off/on
-            - About: help guide, developer contact, safety disclaimer
+            - Dim screen (rename) + vertical zoom slider on Detect
+            - Settings trimmed to general options; gear shortcut from Detect
+            - Vibrate off by default on fresh install; device volume keys for loudness
 
             If you are on an earlier build: About → Check for update.
         env:
