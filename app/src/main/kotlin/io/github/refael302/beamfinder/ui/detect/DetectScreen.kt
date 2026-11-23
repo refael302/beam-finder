@@ -3,6 +3,7 @@ package io.github.refael302.beamfinder.ui.detect
 import androidx.activity.compose.LocalActivity
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -46,6 +47,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
@@ -221,7 +223,6 @@ private fun DetectContent(
                     lineColor = s.beamColor.uiColor(),
                     onDrag = viewModel::onGuideDrag,
                     onDragEnd = viewModel::onGuideDragEnd,
-                    onToggleLock = viewModel::toggleGuideLock,
                 )
 
                 LevelMeter(
@@ -238,6 +239,15 @@ private fun DetectContent(
                     Modifier
                         .align(Alignment.TopCenter)
                         .padding(top = overlayTopInset + 12.dp),
+                )
+
+                // Fixed lock control — not tied to the guide line Y, so it stays tappable at the top.
+                GuideLockButton(
+                    locked = s.guideLocked,
+                    onToggle = viewModel::toggleGuideLock,
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(top = overlayTopInset + 8.dp, end = 8.dp),
                 )
 
                 Column(
@@ -394,7 +404,7 @@ private fun Controls(viewModel: DetectViewModel, session: DetectSessionState) {
                 selected = session.openPanel == DetectControlPanel.Sensitivity,
                 onClick = { viewModel.toggleControlPanel(DetectControlPanel.Sensitivity) },
                 icon = Icons.Filled.Tune,
-                label = stringResource(R.string.setting_sensitivity),
+                label = stringResource(R.string.detect_panel_sensitivity),
                 modifier = Modifier.weight(1f),
             )
             TopicChip(
@@ -422,6 +432,7 @@ private fun Controls(viewModel: DetectViewModel, session: DetectSessionState) {
     }
 }
 
+/** Icon above a short label so four topics fit without truncating sideways. */
 @Composable
 private fun TopicChip(
     selected: Boolean,
@@ -430,17 +441,35 @@ private fun TopicChip(
     label: String,
     modifier: Modifier = Modifier,
 ) {
-    FilterChip(
-        selected = selected,
-        onClick = onClick,
-        modifier = modifier.fillMaxWidth(),
-        leadingIcon = {
-            Icon(icon, contentDescription = null, modifier = Modifier.size(18.dp))
-        },
-        label = {
-            Text(label, maxLines = 1, overflow = TextOverflow.Ellipsis)
-        },
-    )
+    val container = if (selected) {
+        MaterialTheme.colorScheme.secondaryContainer
+    } else {
+        MaterialTheme.colorScheme.surfaceContainerHighest
+    }
+    val content = if (selected) {
+        MaterialTheme.colorScheme.onSecondaryContainer
+    } else {
+        MaterialTheme.colorScheme.onSurfaceVariant
+    }
+    Column(
+        modifier
+            .clip(RoundedCornerShape(12.dp))
+            .background(container)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 4.dp, vertical = 6.dp)
+            .semantics { contentDescription = label },
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(2.dp),
+    ) {
+        Icon(icon, contentDescription = null, tint = content, modifier = Modifier.size(20.dp))
+        Text(
+            label,
+            color = content,
+            maxLines = 1,
+            overflow = TextOverflow.Clip,
+            style = MaterialTheme.typography.labelSmall,
+        )
+    }
 }
 
 /** Sensitivity slider + Auto chip; local drag state commits when the finger lifts. */

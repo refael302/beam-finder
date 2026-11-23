@@ -19,27 +19,20 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.filled.Cameraswitch
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.ui.semantics.Role
-import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.calculateZoom
-import androidx.compose.foundation.gestures.draggable
-import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
@@ -68,12 +61,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -84,7 +75,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import io.github.refael302.beamfinder.R
 import io.github.refael302.beamfinder.detection.sensitivity.SensitivityModel
-import kotlin.math.roundToInt
+import kotlin.math.abs
 
 /** Keeps the screen on while composed (Detect screen active). */
 @Composable
@@ -116,11 +107,9 @@ fun Modifier.pinchToZoom(onZoom: (Float) -> Unit): Modifier = pointerInput(Unit)
 
 /**
  * Full-width guide line marking the lens/height reference. VISUAL ONLY: detection scans the
- * whole frame. Drag the line vertically to move it (unless locked); the lock button sits at the
- * line's end. Draw this in an LTR subtree.
- *
- * The line may sit at y=0 (front camera at the top). The drag hit-box is clamped below the
- * status-bar inset so a downward drag does not open the system shade.
+ * whole frame. When unlocked, a one-finger vertical drag anywhere on the preview moves the line
+ * (pinch zoom stays two-finger). Locking is a separate fixed control — see [GuideLockButton].
+ * Draw this in an LTR subtree.
  */
 @Composable
 fun GuideOverlay(
@@ -129,19 +118,10 @@ fun GuideOverlay(
     lineColor: Color,
     onDrag: (Float) -> Unit,
     onDragEnd: () -> Unit,
-    onToggleLock: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     BoxWithConstraints(modifier.fillMaxSize()) {
         val heightPx = constraints.maxHeight.toFloat().coerceAtLeast(1f)
-        val density = LocalDensity.current
-        val touchPx = with(density) { TOUCH_HEIGHT.toPx() }
-        val buttonPx = with(density) { LOCK_BUTTON.toPx() }
-        val systemBars = WindowInsets.systemBars
-        // Extra pad past the inset: shade can still steal touches right at the status-bar edge.
-        val edgePadPx = with(density) { GUIDE_EDGE_PAD.toPx() }
-        val topSafe = systemBars.getTop(density).toFloat() + edgePadPx
-        val bottomSafe = systemBars.getBottom(density).toFloat() + edgePadPx
 
         Canvas(Modifier.fillMaxSize()) {
             val y = guideY * size.height
@@ -155,67 +135,100 @@ fun GuideOverlay(
             )
         }
 
-        val latestGuide by rememberUpdatedState(guideY)
-        var dragY by remember { mutableFloatStateOf(guideY) }
-        val dragState = rememberDraggableState { delta ->
-            dragY = (dragY + delta / heightPx).coerceIn(0f, 1f)
-            onDrag(dragY)
-        }
-        // Keep the visual line free to 0..1; only the touch strip stays out of system-bar zones.
-        val touchTop = guideTouchTop(guideY * heightPx, heightPx, touchPx, topSafe, bottomSafe)
-        Box(
-            Modifier
-                .offset { IntOffset(0, touchTop.roundToInt()) }
-                .fillMaxWidth()
-                .height(TOUCH_HEIGHT)
-                .draggable(
-                    state = dragState,
-                    orientation = Orientation.Vertical,
-                    enabled = !locked,
-                    onDragStarted = { dragY = latestGuide },
-                    onDragStopped = { onDragEnd() },
-                ),
-        )
-
-        val lockDescription = stringResource(if (locked) R.string.detect_guide_unlock else R.string.detect_guide_lock)
-        FilledIconToggleButton(
-            checked = locked,
-            onCheckedChange = { onToggleLock() },
-            colors = IconButtonDefaults.filledIconToggleButtonColors(
-                containerColor = Color.Black.copy(alpha = 0.45f),
-                contentColor = Color.White,
-            ),
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .offset {
-                    val y = (guideY * heightPx - buttonPx / 2f).coerceIn(
-                        topSafe,
-                        (heightPx - bottomSafe - buttonPx).coerceAtLeast(topSafe),
-                    )
-                    IntOffset(0, y.roundToInt())
-                }
-                .padding(end = 8.dp)
-                .size(LOCK_BUTTON)
-                .semantics { contentDescription = lockDescription },
-        ) {
-            Icon(if (locked) Icons.Filled.Lock else Icons.Outlined.Lock, contentDescription = null)
+        if (!locked) {
+            val latestGuide by rememberUpdatedState(guideY)
+            val latestOnDrag by rememberUpdatedState(onDrag)
+            val latestOnDragEnd by rememberUpdatedState(onDragEnd)
+            var dragY by remember { mutableFloatStateOf(guideY) }
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .pointerInput(heightPx) {
+                        val touchSlop = viewConfiguration.touchSlop
+                        awaitEachGesture {
+                            // Skip downs already taken by controls drawn above (lock, zoom, pills).
+                            val down = awaitFirstDown(requireUnconsumed = true)
+                            dragY = latestGuide
+                            var dragging = false
+                            var totalDy = 0f
+                            val pointerId = down.id
+                            while (true) {
+                                val event = awaitPointerEvent()
+                                // Leave two-finger pinches to [pinchToZoom] on the parent.
+                                if (event.changes.count { it.pressed } >= 2) {
+                                    if (dragging) latestOnDragEnd()
+                                    return@awaitEachGesture
+                                }
+                                val change = event.changes.firstOrNull { it.id == pointerId }
+                                    ?: break
+                                if (!change.pressed) {
+                                    if (dragging) latestOnDragEnd()
+                                    break
+                                }
+                                val dy = change.position.y - change.previousPosition.y
+                                if (!dragging) {
+                                    totalDy += dy
+                                    if (abs(totalDy) < touchSlop) continue
+                                    dragging = true
+                                }
+                                dragY = (dragY + dy / heightPx).coerceIn(0f, 1f)
+                                latestOnDrag(dragY)
+                                change.consume()
+                            }
+                        }
+                    },
+            )
         }
     }
 }
 
 /**
- * Preferred hit-box top for a guide at [guideYPx]: centered on the line when possible, otherwise
- * shifted so the strip stays inside the safe band between [topSafe] and [heightPx] - [bottomSafe].
+ * Fixed lock/unlock control for the guide line — not tied to the line's Y position, so it stays
+ * reachable when the line is at the top. Shows a lock glyph plus a short line cue.
  */
-private fun guideTouchTop(
-    guideYPx: Float,
-    heightPx: Float,
-    touchPx: Float,
-    topSafe: Float,
-    bottomSafe: Float,
-): Float {
-    val maxTop = (heightPx - bottomSafe - touchPx).coerceAtLeast(topSafe)
-    return (guideYPx - touchPx / 2f).coerceIn(topSafe, maxTop)
+@Composable
+fun GuideLockButton(
+    locked: Boolean,
+    onToggle: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val lockDescription = stringResource(if (locked) R.string.detect_guide_unlock else R.string.detect_guide_lock)
+    FilledIconToggleButton(
+        checked = locked,
+        onCheckedChange = { onToggle() },
+        colors = IconButtonDefaults.filledIconToggleButtonColors(
+            containerColor = Color.Black.copy(alpha = 0.45f),
+            contentColor = Color.White,
+            checkedContainerColor = Color.Black.copy(alpha = 0.65f),
+            checkedContentColor = Color.White,
+        ),
+        modifier = modifier
+            .size(LOCK_BUTTON)
+            .semantics { contentDescription = lockDescription },
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Canvas(
+                Modifier
+                    .width(16.dp)
+                    .height(3.dp),
+            ) {
+                val stroke = 2.dp.toPx()
+                val y = size.height / 2f
+                drawLine(
+                    Color.White.copy(alpha = 0.9f),
+                    Offset(0f, y),
+                    Offset(size.width, y),
+                    stroke,
+                    pathEffect = if (locked) null else PathEffect.dashPathEffect(floatArrayOf(4f, 3f)),
+                )
+            }
+            Icon(
+                if (locked) Icons.Filled.Lock else Icons.Outlined.Lock,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp),
+            )
+        }
+    }
 }
 
 /**
@@ -428,10 +441,7 @@ fun CameraPermissionGate(
     }
 }
 
-private val TOUCH_HEIGHT = 48.dp
-private val LOCK_BUTTON = 40.dp
-/** Keeps the drag strip clear of the system shade / nav-gesture edge. */
-private val GUIDE_EDGE_PAD = 8.dp
+private val LOCK_BUTTON = 44.dp
 private const val UNLOCK_HOLD_MS = 1_200L
 /** Near-minimum; exactly 0 turns the backlight fully off on some devices. */
 private const val POCKET_BRIGHTNESS = 0.01f
