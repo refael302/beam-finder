@@ -15,6 +15,8 @@ import io.github.refael302.beamfinder.settings.AppSettings
 import io.github.refael302.beamfinder.settings.BeamColor
 import io.github.refael302.beamfinder.settings.CameraFacing
 import io.github.refael302.beamfinder.settings.SettingsRepository
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -72,6 +74,8 @@ class DetectViewModel(
         .stateIn(viewModelScope, SharingStarted.Eagerly, SensitivityModel.thresholds(AppSettings.Default.sensitivity))
 
     private var active = false
+    /** Cancels the pending auto-lock after the last guide interaction. */
+    private var guideAutoLockJob: Job? = null
 
     init {
         viewModelScope.launch {
@@ -80,6 +84,10 @@ class DetectViewModel(
                 analyzer.hue = s.beamColor.toHue()
                 pipeline.thresholds = SensitivityModel.thresholds(s.sensitivity)
                 beepEngine.configure(s)
+                if (s.guideLocked) {
+                    guideAutoLockJob?.cancel()
+                    guideAutoLockJob = null
+                }
             }
         }
         // A different colour or camera invalidates the ambient baseline.
@@ -115,11 +123,14 @@ class DetectViewModel(
         active = true
         pipeline.recalibrate()
         beepEngine.start(viewModelScope)
+        if (!settings.value.guideLocked) scheduleGuideAutoLock()
     }
 
     fun onInactive() {
         if (!active) return
         active = false
+        guideAutoLockJob?.cancel()
+        guideAutoLockJob = null
         autoSensitivity.reset()
         beepEngine.stop()
         analyzer.clear()
@@ -168,6 +179,8 @@ class DetectViewModel(
 
     fun onGuideDrag(y: Float) {
         if (settings.value.guideLocked) return
+        guideAutoLockJob?.cancel()
+        guideAutoLockJob = null
         val v = y.coerceIn(0f, 1f)
         _session.update { it.copy(draggingGuideY = v) }
     }
@@ -177,11 +190,41 @@ class DetectViewModel(
         viewModelScope.launch {
             repository.update { it.copy(guideLineY = y) }
             _session.update { it.copy(draggingGuideY = null) }
+            scheduleGuideAutoLock()
         }
     }
 
     fun toggleGuideLock() {
-        viewModelScope.launch { repository.update { it.copy(guideLocked = !it.guideLocked) } }
+        viewModelScope.launch {
+            val locking = !settings.value.guideLocked
+            if (locking) {
+                guideAutoLockJob?.cancel()
+                guideAutoLockJob = null
+                // Persist any in-progress drag so locking mid-gesture does not drop the position.
+                val y = _session.value.draggingGuideY
+                if (y != null) {
+                    repository.update { it.copy(guideLineY = y, guideLocked = true) }
+                    _session.update { it.copy(draggingGuideY = null) }
+                } else {
+                    repository.update { it.copy(guideLocked = true) }
+                }
+            } else {
+                repository.update { it.copy(guideLocked = false) }
+                scheduleGuideAutoLock()
+            }
+        }
+    }
+
+    /** After [GUIDE_AUTO_LOCK_MS] without dragging, freeze the line so it can't shift by accident. */
+    private fun scheduleGuideAutoLock() {
+        if (!active) return
+        guideAutoLockJob?.cancel()
+        guideAutoLockJob = viewModelScope.launch {
+            delay(GUIDE_AUTO_LOCK_MS)
+            if (active && !settings.value.guideLocked && _session.value.draggingGuideY == null) {
+                repository.update { it.copy(guideLocked = true) }
+            }
+        }
     }
 
     /** Quick control: Red <-> Green (persisted; the colour change triggers recalibration). */
@@ -211,6 +254,8 @@ class DetectViewModel(
         const val PINCH_SENSITIVITY = 0.8f
         const val PINCH_SCALE_MIN = 0.5f
         const val PINCH_SCALE_MAX = 2f
+        /** Idle time after the last guide drag / unlock before the line locks itself. */
+        const val GUIDE_AUTO_LOCK_MS = 3_000L
     }
 }
 
