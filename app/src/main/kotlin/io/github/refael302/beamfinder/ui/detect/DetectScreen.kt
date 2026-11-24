@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -17,7 +19,6 @@ import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.Build
@@ -29,12 +30,11 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.WbSunny
 import androidx.compose.material.icons.outlined.Lock
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
@@ -431,9 +431,54 @@ private fun Controls(viewModel: DetectViewModel, session: DetectSessionState) {
 }
 
 /**
- * Icon-only topic toggle. No visible label (avoids truncation); [label] is a11y only.
- * Selected and unselected share the same outline shape — only border/tint strength changes.
+ * Shared Detect control chrome: transparent fill + 1dp outline. Selected only strengthens
+ * border/tint — never a filled chip background — so every button matches.
  */
+@Composable
+private fun OutlinedControl(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    selected: Boolean = false,
+    contentDescription: String? = null,
+    content: @Composable RowScope.() -> Unit,
+) {
+    val shape = RoundedCornerShape(12.dp)
+    val borderColor = if (selected) {
+        MaterialTheme.colorScheme.primary
+    } else {
+        MaterialTheme.colorScheme.outline
+    }
+    val contentColor = if (selected) {
+        MaterialTheme.colorScheme.primary
+    } else {
+        MaterialTheme.colorScheme.onSurface
+    }
+    Row(
+        modifier
+            .defaultMinSize(minHeight = 48.dp)
+            .clip(shape)
+            .border(width = 1.dp, color = borderColor, shape = shape)
+            .background(Color.Transparent)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 12.dp, vertical = 8.dp)
+            .then(
+                if (contentDescription != null) {
+                    Modifier.semantics { this.contentDescription = contentDescription }
+                } else {
+                    Modifier
+                },
+            ),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+        content = {
+            CompositionLocalProvider(LocalContentColor provides contentColor) {
+                content()
+            }
+        },
+    )
+}
+
+/** Icon-only topic toggle; [label] is a11y only so four topics never truncate. */
 @Composable
 private fun TopicChip(
     selected: Boolean,
@@ -442,32 +487,17 @@ private fun TopicChip(
     label: String,
     modifier: Modifier = Modifier,
 ) {
-    val shape = RoundedCornerShape(12.dp)
-    val borderColor = if (selected) {
-        MaterialTheme.colorScheme.primary
-    } else {
-        MaterialTheme.colorScheme.outline
-    }
-    val content = if (selected) {
-        MaterialTheme.colorScheme.primary
-    } else {
-        MaterialTheme.colorScheme.onSurface
-    }
-    Box(
-        modifier
-            .defaultMinSize(minHeight = 48.dp)
-            .clip(shape)
-            .border(width = 1.dp, color = borderColor, shape = shape)
-            .background(Color.Transparent)
-            .clickable(onClick = onClick)
-            .semantics { contentDescription = label },
-        contentAlignment = Alignment.Center,
+    OutlinedControl(
+        onClick = onClick,
+        selected = selected,
+        contentDescription = label,
+        modifier = modifier,
     ) {
-        Icon(icon, contentDescription = null, tint = content, modifier = Modifier.size(22.dp))
+        Icon(icon, contentDescription = null, modifier = Modifier.size(22.dp))
     }
 }
 
-/** Sensitivity slider + Auto chip; local drag state commits when the finger lifts. */
+/** Sensitivity slider + Auto toggle; local drag state commits when the finger lifts. */
 @Composable
 private fun SensitivityControls(
     sensitivity: Int,
@@ -494,11 +524,9 @@ private fun SensitivityControls(
             steps = AppSettings.SENSITIVITY_RANGE.last - AppSettings.SENSITIVITY_RANGE.first - 1,
             modifier = Modifier.weight(1f),
         )
-        FilterChip(
-            selected = auto,
-            onClick = onToggleAuto,
-            label = { Text(stringResource(R.string.detect_sensitivity_auto)) },
-        )
+        OutlinedControl(onClick = onToggleAuto, selected = auto) {
+            Text(stringResource(R.string.detect_sensitivity_auto), style = MaterialTheme.typography.labelLarge)
+        }
     }
 }
 
@@ -514,40 +542,34 @@ private fun LocksControls(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        FilterChip(
-            selected = aeAwbLock,
+        OutlinedControl(
             onClick = onToggleAeAwb,
-            modifier = Modifier.weight(1f).fillMaxWidth(),
-            leadingIcon = {
-                Icon(Icons.Filled.WbSunny, contentDescription = null, modifier = Modifier.size(18.dp))
-            },
-            label = {
-                Text(
-                    stringResource(R.string.detect_lock_exposure),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            },
-        )
-        FilterChip(
-            selected = focusLock,
+            selected = aeAwbLock,
+            modifier = Modifier.weight(1f),
+        ) {
+            Icon(Icons.Filled.WbSunny, contentDescription = null, modifier = Modifier.size(18.dp))
+            Text(
+                stringResource(R.string.detect_lock_exposure),
+                modifier = Modifier.padding(start = 8.dp),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                style = MaterialTheme.typography.labelLarge,
+            )
+        }
+        OutlinedControl(
             onClick = onToggleFocus,
-            modifier = Modifier.weight(1f).fillMaxWidth(),
-            leadingIcon = {
-                Icon(
-                    Icons.Filled.CenterFocusStrong,
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp),
-                )
-            },
-            label = {
-                Text(
-                    stringResource(R.string.detect_lock_focus),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            },
-        )
+            selected = focusLock,
+            modifier = Modifier.weight(1f),
+        ) {
+            Icon(Icons.Filled.CenterFocusStrong, contentDescription = null, modifier = Modifier.size(18.dp))
+            Text(
+                stringResource(R.string.detect_lock_focus),
+                modifier = Modifier.padding(start = 8.dp),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                style = MaterialTheme.typography.labelLarge,
+            )
+        }
     }
 }
 
@@ -561,30 +583,24 @@ private fun ActionsControls(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        OutlinedButton(onClick = onCalibrate, modifier = Modifier.weight(1f)) {
-            Icon(
-                Icons.Filled.RestartAlt,
-                contentDescription = null,
-                modifier = Modifier.size(18.dp),
-            )
+        OutlinedControl(onClick = onCalibrate, modifier = Modifier.weight(1f)) {
+            Icon(Icons.Filled.RestartAlt, contentDescription = null, modifier = Modifier.size(18.dp))
             Text(
                 stringResource(R.string.detect_calibrate),
                 modifier = Modifier.padding(start = 8.dp),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
+                style = MaterialTheme.typography.labelLarge,
             )
         }
-        OutlinedButton(onClick = onPocket, modifier = Modifier.weight(1f)) {
-            Icon(
-                Icons.Filled.DarkMode,
-                contentDescription = null,
-                modifier = Modifier.size(18.dp),
-            )
+        OutlinedControl(onClick = onPocket, modifier = Modifier.weight(1f)) {
+            Icon(Icons.Filled.DarkMode, contentDescription = null, modifier = Modifier.size(18.dp))
             Text(
                 stringResource(R.string.detect_pocket),
                 modifier = Modifier.padding(start = 8.dp),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
+                style = MaterialTheme.typography.labelLarge,
             )
         }
     }
@@ -600,14 +616,14 @@ private fun AdvancedControls(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        FilterChip(
-            selected = showDebug,
-            onClick = onToggleDebug,
-            leadingIcon = {
-                Icon(Icons.Filled.BugReport, contentDescription = null, modifier = Modifier.size(18.dp))
-            },
-            label = { Text(stringResource(R.string.detect_debug)) },
-        )
+        OutlinedControl(onClick = onToggleDebug, selected = showDebug) {
+            Icon(Icons.Filled.BugReport, contentDescription = null, modifier = Modifier.size(18.dp))
+            Text(
+                stringResource(R.string.detect_debug),
+                modifier = Modifier.padding(start = 8.dp),
+                style = MaterialTheme.typography.labelLarge,
+            )
+        }
     }
 }
 
