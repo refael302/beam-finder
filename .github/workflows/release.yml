@@ -47,9 +47,8 @@ jobs:
           body: |
             Beam Finder ${{ steps.apk.outputs.version }}
 
-            - Detect controls grouped into Sensitivity / Locks / Actions / Advanced panels
-            - Guide-line drag stays clear of the system shade at the top edge
-            - Menu refresh + remove unused detection-area width setting
+            - Guide line: drag anywhere on the preview, fixed lock button, auto-lock after 3s
+            - Detect topic buttons are icon-only with a uniform outline style for all controls
 
             If you are on an earlier build: About → Check for update.
         env:
