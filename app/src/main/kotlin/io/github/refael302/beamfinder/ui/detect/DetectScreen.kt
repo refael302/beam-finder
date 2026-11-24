@@ -3,6 +3,7 @@ package io.github.refael302.beamfinder.ui.detect
 import androidx.activity.compose.LocalActivity
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.Build
@@ -241,15 +243,6 @@ private fun DetectContent(
                         .padding(top = overlayTopInset + 12.dp),
                 )
 
-                // Fixed lock control — not tied to the guide line Y, so it stays tappable at the top.
-                GuideLockButton(
-                    locked = s.guideLocked,
-                    onToggle = viewModel::toggleGuideLock,
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(top = overlayTopInset + 8.dp, end = 8.dp),
-                )
-
                 Column(
                     Modifier
                         .align(Alignment.BottomEnd)
@@ -257,6 +250,11 @@ private fun DetectContent(
                     horizontalAlignment = Alignment.End,
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
+                    // Fixed lock control — kept with the right-side tools, not on the guide line / gear.
+                    GuideLockButton(
+                        locked = s.guideLocked,
+                        onToggle = viewModel::toggleGuideLock,
+                    )
                     VerticalZoomSlider(
                         value = session.linearZoom,
                         onValueChange = viewModel::setLinearZoom,
@@ -432,7 +430,10 @@ private fun Controls(viewModel: DetectViewModel, session: DetectSessionState) {
     }
 }
 
-/** Icon above a short label so four topics fit without truncating sideways. */
+/**
+ * Icon-only topic toggle. No visible label (avoids truncation); [label] is a11y only.
+ * Selected and unselected share the same outline shape — only border/tint strength changes.
+ */
 @Composable
 private fun TopicChip(
     selected: Boolean,
@@ -441,34 +442,28 @@ private fun TopicChip(
     label: String,
     modifier: Modifier = Modifier,
 ) {
-    val container = if (selected) {
-        MaterialTheme.colorScheme.secondaryContainer
+    val shape = RoundedCornerShape(12.dp)
+    val borderColor = if (selected) {
+        MaterialTheme.colorScheme.primary
     } else {
-        MaterialTheme.colorScheme.surfaceContainerHighest
+        MaterialTheme.colorScheme.outline
     }
     val content = if (selected) {
-        MaterialTheme.colorScheme.onSecondaryContainer
+        MaterialTheme.colorScheme.primary
     } else {
-        MaterialTheme.colorScheme.onSurfaceVariant
+        MaterialTheme.colorScheme.onSurface
     }
-    Column(
+    Box(
         modifier
-            .clip(RoundedCornerShape(12.dp))
-            .background(container)
+            .defaultMinSize(minHeight = 48.dp)
+            .clip(shape)
+            .border(width = 1.dp, color = borderColor, shape = shape)
+            .background(Color.Transparent)
             .clickable(onClick = onClick)
-            .padding(horizontal = 4.dp, vertical = 6.dp)
             .semantics { contentDescription = label },
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(2.dp),
+        contentAlignment = Alignment.Center,
     ) {
-        Icon(icon, contentDescription = null, tint = content, modifier = Modifier.size(20.dp))
-        Text(
-            label,
-            color = content,
-            maxLines = 1,
-            overflow = TextOverflow.Clip,
-            style = MaterialTheme.typography.labelSmall,
-        )
+        Icon(icon, contentDescription = null, tint = content, modifier = Modifier.size(22.dp))
     }
 }
 
