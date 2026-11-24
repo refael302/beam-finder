@@ -104,7 +104,7 @@
     <string name="help_detect_preview_title">תצוגת מצלמה</string>
     <string name="help_detect_preview">תצוגה חיה מהמצלמה. הזיהוי רץ על כל הפריים במכשיר בלבד; שום דבר לא נשמר או נשלח. צביטה בשתי אצבעות לזום.</string>
     <string name="help_detect_guide_title">קו מנחה</string>
-    <string name="help_detect_guide">סימון גובה ויזואלי בלבד. כשהקו פתוח, החלקה באצבע אחת למעלה או למטה בכל מקום בתצוגה מזיזה אותו. כפתור הנעילה (קו + מנעול, למעלה מימין) מקפיא אותו; הוא גם ננעל אוטומטית אחרי 3 שניות בלי גרירה.</string>
+    <string name="help_detect_guide">סימון גובה ויזואלי בלבד. כשהקו פתוח, החלקה באצבע אחת למעלה או למטה בכל מקום בתצוגה מזיזה אותו. כפתור הנעילה (קו + מנעול, מעל סליידר הזום) מקפיא אותו; הוא גם ננעל אוטומטית אחרי 3 שניות בלי גרירה.</string>
     <string name="help_detect_level">מד אנכי של עוצמת האות הנוכחית, עם ספי התחלה ומלא.</string>
     <string name="help_detect_quick_title">צבע / מצלמה</string>
     <string name="help_detect_quick">החלפה מהירה של צבע הקרן (אדום/ירוק) ומצלמה קדמית/אחורית.</string>

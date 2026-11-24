@@ -3,11 +3,14 @@ package io.github.refael302.beamfinder.ui.detect
 import androidx.activity.compose.LocalActivity
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -27,12 +30,11 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.WbSunny
 import androidx.compose.material.icons.outlined.Lock
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
@@ -241,15 +243,6 @@ private fun DetectContent(
                         .padding(top = overlayTopInset + 12.dp),
                 )
 
-                // Fixed lock control — not tied to the guide line Y, so it stays tappable at the top.
-                GuideLockButton(
-                    locked = s.guideLocked,
-                    onToggle = viewModel::toggleGuideLock,
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(top = overlayTopInset + 8.dp, end = 8.dp),
-                )
-
                 Column(
                     Modifier
                         .align(Alignment.BottomEnd)
@@ -257,6 +250,11 @@ private fun DetectContent(
                     horizontalAlignment = Alignment.End,
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
+                    // Fixed lock control — kept with the right-side tools, not on the guide line / gear.
+                    GuideLockButton(
+                        locked = s.guideLocked,
+                        onToggle = viewModel::toggleGuideLock,
+                    )
                     VerticalZoomSlider(
                         value = session.linearZoom,
                         onValueChange = viewModel::setLinearZoom,
@@ -432,7 +430,55 @@ private fun Controls(viewModel: DetectViewModel, session: DetectSessionState) {
     }
 }
 
-/** Icon above a short label so four topics fit without truncating sideways. */
+/**
+ * Shared Detect control chrome: transparent fill + 1dp outline. Selected only strengthens
+ * border/tint — never a filled chip background — so every button matches.
+ */
+@Composable
+private fun OutlinedControl(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    selected: Boolean = false,
+    contentDescription: String? = null,
+    content: @Composable RowScope.() -> Unit,
+) {
+    val shape = RoundedCornerShape(12.dp)
+    val borderColor = if (selected) {
+        MaterialTheme.colorScheme.primary
+    } else {
+        MaterialTheme.colorScheme.outline
+    }
+    val contentColor = if (selected) {
+        MaterialTheme.colorScheme.primary
+    } else {
+        MaterialTheme.colorScheme.onSurface
+    }
+    Row(
+        modifier
+            .defaultMinSize(minHeight = 48.dp)
+            .clip(shape)
+            .border(width = 1.dp, color = borderColor, shape = shape)
+            .background(Color.Transparent)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 12.dp, vertical = 8.dp)
+            .then(
+                if (contentDescription != null) {
+                    Modifier.semantics { this.contentDescription = contentDescription }
+                } else {
+                    Modifier
+                },
+            ),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+        content = {
+            CompositionLocalProvider(LocalContentColor provides contentColor) {
+                content()
+            }
+        },
+    )
+}
+
+/** Icon-only topic toggle; [label] is a11y only so four topics never truncate. */
 @Composable
 private fun TopicChip(
     selected: Boolean,
@@ -441,38 +487,17 @@ private fun TopicChip(
     label: String,
     modifier: Modifier = Modifier,
 ) {
-    val container = if (selected) {
-        MaterialTheme.colorScheme.secondaryContainer
-    } else {
-        MaterialTheme.colorScheme.surfaceContainerHighest
-    }
-    val content = if (selected) {
-        MaterialTheme.colorScheme.onSecondaryContainer
-    } else {
-        MaterialTheme.colorScheme.onSurfaceVariant
-    }
-    Column(
-        modifier
-            .clip(RoundedCornerShape(12.dp))
-            .background(container)
-            .clickable(onClick = onClick)
-            .padding(horizontal = 4.dp, vertical = 6.dp)
-            .semantics { contentDescription = label },
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(2.dp),
+    OutlinedControl(
+        onClick = onClick,
+        selected = selected,
+        contentDescription = label,
+        modifier = modifier,
     ) {
-        Icon(icon, contentDescription = null, tint = content, modifier = Modifier.size(20.dp))
-        Text(
-            label,
-            color = content,
-            maxLines = 1,
-            overflow = TextOverflow.Clip,
-            style = MaterialTheme.typography.labelSmall,
-        )
+        Icon(icon, contentDescription = null, modifier = Modifier.size(22.dp))
     }
 }
 
-/** Sensitivity slider + Auto chip; local drag state commits when the finger lifts. */
+/** Sensitivity slider + Auto toggle; local drag state commits when the finger lifts. */
 @Composable
 private fun SensitivityControls(
     sensitivity: Int,
@@ -499,11 +524,9 @@ private fun SensitivityControls(
             steps = AppSettings.SENSITIVITY_RANGE.last - AppSettings.SENSITIVITY_RANGE.first - 1,
             modifier = Modifier.weight(1f),
         )
-        FilterChip(
-            selected = auto,
-            onClick = onToggleAuto,
-            label = { Text(stringResource(R.string.detect_sensitivity_auto)) },
-        )
+        OutlinedControl(onClick = onToggleAuto, selected = auto) {
+            Text(stringResource(R.string.detect_sensitivity_auto), style = MaterialTheme.typography.labelLarge)
+        }
     }
 }
 
@@ -519,40 +542,34 @@ private fun LocksControls(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        FilterChip(
-            selected = aeAwbLock,
+        OutlinedControl(
             onClick = onToggleAeAwb,
-            modifier = Modifier.weight(1f).fillMaxWidth(),
-            leadingIcon = {
-                Icon(Icons.Filled.WbSunny, contentDescription = null, modifier = Modifier.size(18.dp))
-            },
-            label = {
-                Text(
-                    stringResource(R.string.detect_lock_exposure),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            },
-        )
-        FilterChip(
-            selected = focusLock,
+            selected = aeAwbLock,
+            modifier = Modifier.weight(1f),
+        ) {
+            Icon(Icons.Filled.WbSunny, contentDescription = null, modifier = Modifier.size(18.dp))
+            Text(
+                stringResource(R.string.detect_lock_exposure),
+                modifier = Modifier.padding(start = 8.dp),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                style = MaterialTheme.typography.labelLarge,
+            )
+        }
+        OutlinedControl(
             onClick = onToggleFocus,
-            modifier = Modifier.weight(1f).fillMaxWidth(),
-            leadingIcon = {
-                Icon(
-                    Icons.Filled.CenterFocusStrong,
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp),
-                )
-            },
-            label = {
-                Text(
-                    stringResource(R.string.detect_lock_focus),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            },
-        )
+            selected = focusLock,
+            modifier = Modifier.weight(1f),
+        ) {
+            Icon(Icons.Filled.CenterFocusStrong, contentDescription = null, modifier = Modifier.size(18.dp))
+            Text(
+                stringResource(R.string.detect_lock_focus),
+                modifier = Modifier.padding(start = 8.dp),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                style = MaterialTheme.typography.labelLarge,
+            )
+        }
     }
 }
 
@@ -566,30 +583,24 @@ private fun ActionsControls(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        OutlinedButton(onClick = onCalibrate, modifier = Modifier.weight(1f)) {
-            Icon(
-                Icons.Filled.RestartAlt,
-                contentDescription = null,
-                modifier = Modifier.size(18.dp),
-            )
+        OutlinedControl(onClick = onCalibrate, modifier = Modifier.weight(1f)) {
+            Icon(Icons.Filled.RestartAlt, contentDescription = null, modifier = Modifier.size(18.dp))
             Text(
                 stringResource(R.string.detect_calibrate),
                 modifier = Modifier.padding(start = 8.dp),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
+                style = MaterialTheme.typography.labelLarge,
             )
         }
-        OutlinedButton(onClick = onPocket, modifier = Modifier.weight(1f)) {
-            Icon(
-                Icons.Filled.DarkMode,
-                contentDescription = null,
-                modifier = Modifier.size(18.dp),
-            )
+        OutlinedControl(onClick = onPocket, modifier = Modifier.weight(1f)) {
+            Icon(Icons.Filled.DarkMode, contentDescription = null, modifier = Modifier.size(18.dp))
             Text(
                 stringResource(R.string.detect_pocket),
                 modifier = Modifier.padding(start = 8.dp),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
+                style = MaterialTheme.typography.labelLarge,
             )
         }
     }
@@ -605,14 +616,14 @@ private fun AdvancedControls(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        FilterChip(
-            selected = showDebug,
-            onClick = onToggleDebug,
-            leadingIcon = {
-                Icon(Icons.Filled.BugReport, contentDescription = null, modifier = Modifier.size(18.dp))
-            },
-            label = { Text(stringResource(R.string.detect_debug)) },
-        )
+        OutlinedControl(onClick = onToggleDebug, selected = showDebug) {
+            Icon(Icons.Filled.BugReport, contentDescription = null, modifier = Modifier.size(18.dp))
+            Text(
+                stringResource(R.string.detect_debug),
+                modifier = Modifier.padding(start = 8.dp),
+                style = MaterialTheme.typography.labelLarge,
+            )
+        }
     }
 }
 
