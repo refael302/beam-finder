@@ -107,7 +107,7 @@
     <string name="help_detect_preview_title">Camera preview</string>
     <string name="help_detect_preview">Live camera view. Detection runs on the full frame on-device; nothing is saved or sent. Pinch with two fingers to zoom.</string>
     <string name="help_detect_guide_title">Guide line</string>
-    <string name="help_detect_guide">Visual height reference only. With the line unlocked, swipe one finger up or down anywhere on the preview to move it. Use the lock button (line + padlock, above the zoom slider) to freeze it; it also locks automatically after 3 seconds without dragging.</string>
+    <string name="help_detect_guide">Visual height reference only. With the line unlocked, swipe one finger up or down anywhere on the preview to move it. Use the lock button (line + padlock, above the zoom slider) to freeze it; it also locks automatically after 10 seconds without dragging.</string>
     <string name="help_detect_level">Vertical meter of current signal strength, with start and full thresholds.</string>
     <string name="help_detect_quick_title">Color / camera pills</string>
     <string name="help_detect_quick">Quick toggles for beam color (red/green) and front/back camera.</string>

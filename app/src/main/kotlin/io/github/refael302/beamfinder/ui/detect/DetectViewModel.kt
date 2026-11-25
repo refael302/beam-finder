@@ -255,7 +255,7 @@ class DetectViewModel(
         const val PINCH_SCALE_MIN = 0.5f
         const val PINCH_SCALE_MAX = 2f
         /** Idle time after the last guide drag / unlock before the line locks itself. */
-        const val GUIDE_AUTO_LOCK_MS = 3_000L
+        const val GUIDE_AUTO_LOCK_MS = 10_000L
     }
 }
 
