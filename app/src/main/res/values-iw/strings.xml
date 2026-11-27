@@ -103,13 +103,13 @@
     <string name="help_menu_about">מציג גרסה, פרטי מפתח, הצהרת אחריות, עזרה ועדכונים.</string>
     <string name="help_section_detect">זיהוי</string>
     <string name="help_detect_preview_title">תצוגת מצלמה</string>
-    <string name="help_detect_preview">תצוגה חיה מהמצלמה. הזיהוי רץ על כל הפריים במכשיר בלבד; שום דבר לא נשמר או נשלח. צביטה בשתי אצבעות לזום.</string>
+    <string name="help_detect_preview">תצוגה חיה מהמצלמה. הזיהוי רץ במכשיר על האזור הנראה (כולל זום); שום דבר לא נשמר או נשלח. צביטה בשתי אצבעות לזום דיגיטלי.</string>
     <string name="help_detect_guide_title">קו מנחה</string>
     <string name="help_detect_guide">סימון גובה ויזואלי בלבד. כשהקו פתוח, החלקה באצבע אחת למעלה או למטה בכל מקום בתצוגה מזיזה אותו. כפתור הנעילה (קו + מנעול, מעל סליידר הזום) מקפיא אותו; הוא גם ננעל אוטומטית אחרי 10 שניות בלי גרירה.</string>
     <string name="help_detect_level">מד אנכי של עוצמת האות הנוכחית, עם ספי התחלה ומלא.</string>
     <string name="help_detect_quick_title">צבע / מצלמה</string>
     <string name="help_detect_quick">החלפה מהירה של צבע הקרן (אדום/ירוק) ומצלמה קדמית/אחורית.</string>
-    <string name="help_detect_zoom">סליידר אנכי בצד ימין למטה של התצוגה: למעלה זום פנימה, למטה התרחקות. צביטה על התצוגה משנה גם את הערך הזה.</string>
+    <string name="help_detect_zoom">סליידר אנכי בצד ימין למטה של התצוגה: למעלה זום פנימה, למטה התרחקות (זום דיגיטלי באפליקציה על עדשה קבועה אחת — בלי החלפת מצלמות). צביטה על התצוגה משנה גם את הערך הזה.</string>
     <string name="help_detect_sensitivity">פותח את פאנל הרגישות עם הסליידר לסשן הנוכחי. ערך גבוה יותר מזהה קרניים חלשות מוקדם יותר.</string>
     <string name="help_detect_sensitivity_auto">מכוון רגישות לפי הסנוור החזק ביותר בסשן. אחרי 30 שניות בלי סנוור מתחיל סשן חדש.</string>
     <string name="help_detect_lock_exposure">בפאנל נעילות: נועל חשיפה ואיזון לבן כדי שהתאורה תישאר יציבה בזמן כיוון.</string>

@@ -106,13 +106,13 @@
     <string name="help_menu_about">Shows version, developer contact, disclaimer, help, and updates.</string>
     <string name="help_section_detect">Detect</string>
     <string name="help_detect_preview_title">Camera preview</string>
-    <string name="help_detect_preview">Live camera view. Detection runs on the full frame on-device; nothing is saved or sent. Pinch with two fingers to zoom.</string>
+    <string name="help_detect_preview">Live camera view. Detection runs on-device on the visible (zoomed) frame; nothing is saved or sent. Pinch with two fingers to zoom digitally.</string>
     <string name="help_detect_guide_title">Guide line</string>
     <string name="help_detect_guide">Visual height reference only. With the line unlocked, swipe one finger up or down anywhere on the preview to move it. Use the lock button (line + padlock, above the zoom slider) to freeze it; it also locks automatically after 10 seconds without dragging.</string>
     <string name="help_detect_level">Vertical meter of current signal strength, with start and full thresholds.</string>
     <string name="help_detect_quick_title">Color / camera pills</string>
     <string name="help_detect_quick">Quick toggles for beam color (red/green) and front/back camera.</string>
-    <string name="help_detect_zoom">Vertical slider on the lower right of the preview: up zooms in, down zooms out. Pinch on the preview also adjusts this value.</string>
+    <string name="help_detect_zoom">Vertical slider on the lower right of the preview: up zooms in, down zooms out (digital zoom in the app on one fixed lens — the phone will not switch cameras). Pinch on the preview also adjusts this value.</string>
     <string name="help_detect_sensitivity">Opens the Sensitivity panel with the session slider. Higher values detect weaker beams sooner.</string>
     <string name="help_detect_sensitivity_auto">Tunes sensitivity from the strongest dazzle in the current session. After 30 seconds without a dazzle, a new session starts.</string>
     <string name="help_detect_lock_exposure">Under Locks: locks auto-exposure and white balance so lighting stays stable while you aim.</string>
