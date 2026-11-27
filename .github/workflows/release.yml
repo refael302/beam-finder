@@ -47,7 +47,7 @@ jobs:
           body: |
             Beam Finder ${{ steps.apk.outputs.version }}
 
-            - Guide line: drag anywhere on the preview, fixed lock button, auto-lock after 3s
+            - Guide line: drag anywhere on the preview, fixed lock button, auto-lock after 10s
             - Detect topic buttons are icon-only with a uniform outline style for all controls
 
             If you are on an earlier build: About → Check for update.
