@@ -42,6 +42,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -53,6 +54,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -71,6 +73,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.refael302.beamfinder.R
 import io.github.refael302.beamfinder.camera.CameraController
+import io.github.refael302.beamfinder.detection.geometry.DigitalZoom
 import io.github.refael302.beamfinder.detection.pipeline.DetectionResult
 import io.github.refael302.beamfinder.detection.sensitivity.SensitivityModel
 import io.github.refael302.beamfinder.settings.AppSettings
@@ -176,8 +179,6 @@ private fun DetectContent(
     DisposableEffect(controller) { onDispose { controller.release() } }
 
     // Detection + audio run while the screen is started (also in pocket mode, which keeps it on).
-    // Re-apply zoom/tuning on every START: CameraX often resets hardware zoom on stop/resume
-    // while session.linearZoom is unchanged, which left the slider ahead of the real zoom.
     LifecycleStartEffect(viewModel, controller) {
         viewModel.onActive()
         controller.reapplyTuning()
@@ -206,6 +207,10 @@ private fun DetectContent(
         if (status == CameraStatus.Running) controller.reapplyTuning()
     }
 
+    val zoomScale = DigitalZoom.scaleFromLinear(session.linearZoom)
+    // Keep analysis FOV in lockstep with the clipped preview scale.
+    SideEffect { viewModel.analyzer.digitalZoomScale = zoomScale }
+
     Column(modifier.fillMaxSize()) {
         // Camera overlay subtree is forced LTR so positions/gestures don't flip in Hebrew.
         CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
@@ -217,7 +222,16 @@ private fun DetectContent(
                     .background(Color.Black)
                     .pinchToZoom(viewModel::zoomBy),
             ) {
-                AndroidView(factory = { previewView }, modifier = Modifier.fillMaxSize())
+                AndroidView(
+                    factory = { previewView },
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .graphicsLayer {
+                            scaleX = zoomScale
+                            scaleY = zoomScale
+                            clip = true
+                        },
+                )
 
                 GuideOverlay(
                     guideY = session.draggingGuideY ?: s.guideLineY,

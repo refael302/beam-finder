@@ -5,6 +5,7 @@ import androidx.camera.core.ImageProxy
 import io.github.refael302.beamfinder.detection.frame.BandExtractor
 import io.github.refael302.beamfinder.detection.frame.YuvPlanes
 import io.github.refael302.beamfinder.detection.geometry.CoordinateMapper
+import io.github.refael302.beamfinder.detection.geometry.DigitalZoom
 import io.github.refael302.beamfinder.detection.geometry.PixelRect
 import io.github.refael302.beamfinder.detection.pipeline.DetectionResult
 import io.github.refael302.beamfinder.detection.pipeline.IntensityPipeline
@@ -17,6 +18,7 @@ import kotlinx.coroutines.flow.asStateFlow
  * CameraX analyzer: YUV_420_888 frame -> upright FULL frame (downsampled) -> [IntensityPipeline]
  * with optional dense secondary crop around a weak wide peak -> [results].
  * The guide line is visual only and does not restrict detection.
+ * [digitalZoomScale] center-crops the ViewPort crop so analysis matches the app preview zoom.
  * Parameters are read per frame and may be changed from any thread.
  */
 class LaserAnalyzer(
@@ -28,6 +30,8 @@ class LaserAnalyzer(
     @Volatile var hue: BeamHue = BeamHue.Red
     /** Front camera preview is mirrored; only affects horizontal positions. */
     @Volatile var mirrored: Boolean = false
+    /** App digital zoom magnification (≥ 1); must match the preview scale. */
+    @Volatile var digitalZoomScale: Float = 1f
 
     private val extractor = BandExtractor(maxOutputWidth = MAX_ANALYSIS_WIDTH)
     private val _results = MutableStateFlow(DetectionResult.Empty)
@@ -35,10 +39,12 @@ class LaserAnalyzer(
 
     override fun analyze(image: ImageProxy) {
         image.use { img ->
-            val crop = img.cropRect
-            if (crop.width() <= 0 || crop.height() <= 0) return
+            val viewCrop = img.cropRect
+            if (viewCrop.width() <= 0 || viewCrop.height() <= 0) return
+            val base = PixelRect(viewCrop.left, viewCrop.top, viewCrop.width(), viewCrop.height())
+            val crop = DigitalZoom.insetCrop(base, digitalZoomScale)
             val mapper = CoordinateMapper(
-                crop = PixelRect(crop.left, crop.top, crop.width(), crop.height()),
+                crop = crop,
                 rotationDegrees = img.imageInfo.rotationDegrees,
                 mirrored = mirrored,
             )

@@ -1,13 +1,18 @@
 package io.github.refael302.beamfinder.camera
 
 import android.content.Context
+import android.hardware.camera2.CameraCharacteristics
+import android.hardware.camera2.CameraMetadata
 import android.hardware.camera2.CaptureRequest
 import android.util.Log
 import android.util.Size
+import androidx.annotation.OptIn
 import androidx.camera.camera2.interop.Camera2CameraControl
+import androidx.camera.camera2.interop.Camera2CameraInfo
 import androidx.camera.camera2.interop.CaptureRequestOptions
 import androidx.camera.camera2.interop.ExperimentalCamera2Interop
 import androidx.camera.core.Camera
+import androidx.camera.core.CameraInfo
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.FocusMeteringAction
 import androidx.camera.core.ImageAnalysis
@@ -30,10 +35,8 @@ import java.util.concurrent.Executors
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
-/** Camera parameters controlled from the Detect screen. */
+/** Camera parameters controlled from the Detect screen (zoom is app-side — see [DigitalZoom]). */
 data class CameraTuning(
-    /** 0..1 digital zoom (session only). */
-    val linearZoom: Float = 0f,
     /** Exposure compensation toward the minimum (from settings). */
     val lowExposure: Boolean = true,
     /** Lock auto-exposure and auto-white-balance. */
@@ -45,8 +48,8 @@ data class CameraTuning(
 /**
  * CameraX wrapper: Preview + ImageAnalysis (YUV_420_888, ~1280x720, keep-only-latest) bound with
  * the PreviewView's ViewPort so the analysis crop rect equals the visible preview area.
- * Wide detection downsamples; secondary refine crops densely from this higher-res stream.
- * Main-thread only.
+ * Prefers a single physical lens (no logical multi-cam zoom switching). Hardware zoom stays at 1×;
+ * magnification is applied in the app (preview + analysis). Main-thread only.
  */
 class CameraController(private val context: Context) {
     private val analysisExecutor: ExecutorService = Executors.newSingleThreadExecutor { r ->
@@ -105,7 +108,13 @@ class CameraController(private val context: Context) {
         provider.unbindAll()
         appliedFocusLock = null
         camera = provider.bindToLifecycle(owner, selector, group)
-        boundFacing = if (selector == CameraSelector.DEFAULT_FRONT_CAMERA) CameraFacing.Front else CameraFacing.Back
+        boundFacing = if (facing == CameraFacing.Front) {
+            if (hasFacing(provider, CameraSelector.LENS_FACING_FRONT)) CameraFacing.Front else CameraFacing.Back
+        } else {
+            if (hasFacing(provider, CameraSelector.LENS_FACING_BACK)) CameraFacing.Back else CameraFacing.Front
+        }
+        // Keep the sensor at 1×; app digital zoom handles magnification.
+        camera?.cameraControl?.setLinearZoom(0f)
         applyAll()
     }
 
@@ -126,24 +135,21 @@ class CameraController(private val context: Context) {
         val old = tuning
         tuning = newTuning
         val cam = camera ?: return
-        // Always push zoom: after screen off/on CameraX may reset hardware zoom while our
-        // stored value is unchanged, so an equality check would skip the restore.
-        cam.cameraControl.setLinearZoom(newTuning.linearZoom)
         if (old.lowExposure != newTuning.lowExposure || old.aeAwbLock != newTuning.aeAwbLock) applyExposure(cam)
         if (appliedFocusLock != newTuning.focusLock) applyFocus(cam)
     }
 
-    /** Force-applies the current [tuning] (zoom/exposure/focus). Call on lifecycle START after resume. */
+    /** Force-applies the current [tuning] (exposure/focus). Call on lifecycle START after resume. */
     fun reapplyTuning() = applyAll()
 
     private fun applyAll() {
         val cam = camera ?: return
-        cam.cameraControl.setLinearZoom(tuning.linearZoom)
+        cam.cameraControl.setLinearZoom(0f)
         applyExposure(cam)
         applyFocus(cam)
     }
 
-    @androidx.annotation.OptIn(ExperimentalCamera2Interop::class)
+    @OptIn(ExperimentalCamera2Interop::class)
     private fun applyExposure(cam: Camera) {
         val exposure = cam.cameraInfo.exposureState
         if (exposure.isExposureCompensationSupported) {
@@ -182,20 +188,75 @@ class CameraController(private val context: Context) {
         }
     }
 
+    /**
+     * Prefer a single physical lens for [facing] so OEM logical multi-cam does not switch
+     * sensors while the user zooms. Falls back to the default facing selector.
+     */
+    @OptIn(ExperimentalCamera2Interop::class)
     private fun pickSelector(provider: ProcessCameraProvider, facing: CameraFacing): CameraSelector {
-        val preferred = if (facing == CameraFacing.Front) CameraSelector.DEFAULT_FRONT_CAMERA else CameraSelector.DEFAULT_BACK_CAMERA
-        val fallback = if (facing == CameraFacing.Front) CameraSelector.DEFAULT_BACK_CAMERA else CameraSelector.DEFAULT_FRONT_CAMERA
+        val lensFacing = if (facing == CameraFacing.Front) {
+            CameraSelector.LENS_FACING_FRONT
+        } else {
+            CameraSelector.LENS_FACING_BACK
+        }
+        val preferred = CameraSelector.Builder()
+            .requireLensFacing(lensFacing)
+            .addCameraFilter { infos ->
+                val forFacing = infos.filter { it.lensFacing == lensFacing }
+                val physical = forFacing.filterNot { isLogicalMultiCamera(it) }
+                val pool = physical.ifEmpty { forFacing }
+                val chosen = pickPrimaryWide(pool)
+                if (chosen != null) listOf(chosen) else emptyList()
+            }
+            .build()
+        if (hasCamera(provider, preferred)) return preferred
+
+        val fallbackFacing = if (facing == CameraFacing.Front) {
+            CameraSelector.LENS_FACING_BACK
+        } else {
+            CameraSelector.LENS_FACING_FRONT
+        }
+        val fallback = CameraSelector.Builder().requireLensFacing(fallbackFacing).build()
         return when {
-            hasCamera(provider, preferred) -> preferred
             hasCamera(provider, fallback) -> fallback
             else -> throw NoCameraException()
         }
     }
 
+    @OptIn(ExperimentalCamera2Interop::class)
+    private fun isLogicalMultiCamera(info: CameraInfo): Boolean {
+        val caps = Camera2CameraInfo.from(info)
+            .getCameraCharacteristic(CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES)
+            ?: return false
+        return caps.contains(CameraMetadata.REQUEST_AVAILABLE_CAPABILITIES_LOGICAL_MULTI_CAMERA)
+    }
+
+    /**
+     * Among physical candidates, pick the median focal length — usually the main wide when the
+     * set is ultrawide + wide + tele.
+     */
+    @OptIn(ExperimentalCamera2Interop::class)
+    private fun pickPrimaryWide(infos: List<CameraInfo>): CameraInfo? {
+        if (infos.isEmpty()) return null
+        if (infos.size == 1) return infos[0]
+        data class Cand(val info: CameraInfo, val focal: Float)
+        val ranked = infos.map { info ->
+            val focal = Camera2CameraInfo.from(info)
+                .getCameraCharacteristic(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS)
+                ?.firstOrNull()
+                ?: Float.POSITIVE_INFINITY
+            Cand(info, focal)
+        }.sortedBy { it.focal }
+        return ranked[ranked.size / 2].info
+    }
+
+    private fun hasFacing(provider: ProcessCameraProvider, lensFacing: Int): Boolean =
+        hasCamera(provider, CameraSelector.Builder().requireLensFacing(lensFacing).build())
+
     private fun hasCamera(provider: ProcessCameraProvider, selector: CameraSelector): Boolean =
         try {
             provider.hasCamera(selector)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             false
         }
 

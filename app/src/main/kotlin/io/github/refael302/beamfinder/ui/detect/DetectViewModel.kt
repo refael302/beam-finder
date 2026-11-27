@@ -109,9 +109,8 @@ class DetectViewModel(
         }
     }
 
-    /** Camera tuning derived from settings + session state. */
+    /** Camera tuning derived from settings + session state (zoom is app-side, not hardware). */
     fun cameraTuning(s: AppSettings, session: DetectSessionState) = CameraTuning(
-        linearZoom = session.linearZoom,
         lowExposure = s.lowExposure,
         aeAwbLock = session.aeAwbLock,
         focusLock = session.focusLock,
