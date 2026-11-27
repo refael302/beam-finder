@@ -157,6 +157,17 @@ private fun UpdateStatusSection(
         Text(statusText, style = MaterialTheme.typography.bodyMedium)
     }
 
+    val notesInfo = when (val st = state) {
+        is UpdateUiState.Available -> st.info
+        is UpdateUiState.Downloading -> st.info
+        is UpdateUiState.Preparing -> st.info
+        is UpdateUiState.AwaitingConfirmation -> st.info
+        is UpdateUiState.NeedsPermission -> st.info
+        is UpdateUiState.Error -> st.info
+        else -> null
+    }
+    ReleaseNotesBlock(notesInfo?.releaseNotes)
+
     when (val st = state) {
         is UpdateUiState.Downloading -> {
             val total = st.totalBytes
@@ -233,5 +244,23 @@ private fun downloadLabel(bytesRead: Long, totalBytes: Long?): String {
         stringResource(R.string.about_update_downloading_progress, percent, readMb, totalMb)
     } else {
         stringResource(R.string.about_update_downloading_bytes, readMb)
+    }
+}
+
+/** Shows GitHub release body under the update status when notes are present. */
+@Composable
+private fun ReleaseNotesBlock(notes: String?) {
+    val trimmed = notes?.trim().orEmpty()
+    if (trimmed.isEmpty()) return
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text(
+            stringResource(R.string.about_update_whats_new),
+            style = MaterialTheme.typography.titleSmall,
+        )
+        Text(
+            trimmed,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }

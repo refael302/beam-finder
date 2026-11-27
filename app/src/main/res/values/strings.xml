@@ -73,6 +73,7 @@
     <string name="about_checking">Checking…</string>
     <string name="about_up_to_date">You are on the latest version.</string>
     <string name="about_update_available">Version %1$s is available.</string>
+    <string name="about_update_whats_new">What\'s new</string>
     <string name="about_update_button">Update</string>
     <string name="about_updating">Downloading and installing update…</string>
     <string name="about_update_downloading_progress">Downloading… %1$d%% (%2$.1f / %3$.1f MB)</string>
