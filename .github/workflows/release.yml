@@ -49,6 +49,7 @@ jobs:
 
             - Guide-line auto-lock after 10 seconds of idle (was 3s)
             - About → Check for update shows What’s new from the release notes
+            - Detect uses one fixed physical lens; zoom is digital in-app (no camera switching)
 
             If you are on an earlier build: About → Check for update.
         env:
