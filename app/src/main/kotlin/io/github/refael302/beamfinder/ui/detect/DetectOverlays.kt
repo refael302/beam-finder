@@ -22,7 +22,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.calculateZoom
-import androidx.compose.foundation.gestures.waitForUpOrCancellation
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -330,7 +330,7 @@ fun LevelMeter(
 
 /**
  * Dim-screen mode: opaque black overlay, minimum screen brightness, hidden system bars, back
- * blocked. Long-press ([UNLOCK_HOLD_MS]) to unlock. The camera keeps running underneath.
+ * blocked. Double-tap to unlock. The camera keeps running underneath.
  */
 @Composable
 fun PocketOverlay(onUnlock: () -> Unit) {
@@ -362,14 +362,7 @@ fun PocketOverlay(onUnlock: () -> Unit) {
             .fillMaxSize()
             .background(Color.Black)
             .pointerInput(Unit) {
-                awaitEachGesture {
-                    awaitFirstDown(requireUnconsumed = false).consume()
-                    val released = withTimeoutOrNull(UNLOCK_HOLD_MS) {
-                        waitForUpOrCancellation()
-                        true
-                    }
-                    if (released == null) unlock()
-                }
+                detectTapGestures(onDoubleTap = { unlock() })
             },
         contentAlignment = Alignment.BottomCenter,
     ) {
@@ -442,6 +435,5 @@ fun CameraPermissionGate(
 }
 
 private val LOCK_BUTTON = 44.dp
-private const val UNLOCK_HOLD_MS = 1_200L
 /** Near-minimum; exactly 0 turns the backlight fully off on some devices. */
 private const val POCKET_BRIGHTNESS = 0.01f

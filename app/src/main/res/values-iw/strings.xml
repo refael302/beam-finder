@@ -31,7 +31,7 @@
     <string name="detect_lock_focus">נעילת מיקוד</string>
     <string name="detect_calibrate">כייל</string>
     <string name="detect_pocket">עמעם מסך</string>
-    <string name="detect_pocket_unlock_hint">לחיצה ארוכה לביטול הנעילה</string>
+    <string name="detect_pocket_unlock_hint">לחיצה כפולה לביטול הנעילה</string>
     <string name="detect_debug">ניפוי באגים</string>
     <string name="detect_level">עוצמת אות</string>
     <string name="detect_guide_lock">נעל קו מנחה</string>
@@ -115,7 +115,7 @@
     <string name="help_detect_lock_exposure">בפאנל נעילות: נועל חשיפה ואיזון לבן כדי שהתאורה תישאר יציבה בזמן כיוון.</string>
     <string name="help_detect_lock_focus">בפאנל נעילות: מבצע מיקוד חד־פעמי ושומר אותו.</string>
     <string name="help_detect_calibrate">בפאנל פעולות: מכייל מחדש את קו הבסיס הסביבתי. יש להרחיק את הקרן מהתמונה בזמן הכיול.</string>
-    <string name="help_detect_pocket">בפאנל פעולות: עמעום מסך והסתרת סרגלי מערכת לשימוש דיסקרטי. לחיצה ארוכה לביטול הנעילה.</string>
+    <string name="help_detect_pocket">בפאנל פעולות: עמעום מסך והסתרת סרגלי מערכת לשימוש דיסקרטי. לחיצה כפולה לביטול הנעילה.</string>
     <string name="help_detect_debug">בפאנל מתקדם: מציג מדדי זיהוי גולמיים על התצוגה לאבחון.</string>
     <string name="help_detect_settings">גלגל שיניים בסרגל העליון של מסך הזיהוי פותח הגדרות בלי לחזור לתפריט.</string>
     <string name="help_section_settings">הגדרות</string>
