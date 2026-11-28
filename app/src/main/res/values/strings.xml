@@ -31,7 +31,7 @@
     <string name="detect_lock_focus">Lock focus</string>
     <string name="detect_calibrate">Calibrate</string>
     <string name="detect_pocket">Dim screen</string>
-    <string name="detect_pocket_unlock_hint">Long-press to unlock</string>
+    <string name="detect_pocket_unlock_hint">Double-tap to unlock</string>
     <string name="detect_debug">Debug</string>
     <string name="detect_level">Signal level</string>
     <string name="detect_guide_lock">Lock guide line</string>
@@ -118,7 +118,7 @@
     <string name="help_detect_lock_exposure">Under Locks: locks auto-exposure and white balance so lighting stays stable while you aim.</string>
     <string name="help_detect_lock_focus">Under Locks: runs one focus pass, then holds focus.</string>
     <string name="help_detect_calibrate">Under Actions: recalibrates ambient baseline. Keep the beam out of view while calibrating.</string>
-    <string name="help_detect_pocket">Under Actions: dims the screen and hides system bars for discreet use. Long-press to unlock.</string>
+    <string name="help_detect_pocket">Under Actions: dims the screen and hides system bars for discreet use. Double-tap to unlock.</string>
     <string name="help_detect_debug">Under Advanced: shows raw detection metrics on the preview for diagnostics.</string>
     <string name="help_detect_settings">Gear in the Detect top bar opens Settings without returning to the menu.</string>
     <string name="help_section_settings">Settings</string>
